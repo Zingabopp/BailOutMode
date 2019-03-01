@@ -1,0 +1,178 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Media;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using IllusionPlugin;
+using Harmony;
+using System.Reflection;
+
+
+namespace BailOutMode
+{
+    public class Plugin : IPlugin
+    {
+        public static string PluginName = "BailOutMode";
+        public string Name => PluginName;
+        public string Version => "0.1.1";
+
+        private static bool _isEnabled = false;
+        private static bool _showFailText = true;
+        private static int _failTextDuration = 5;
+
+        private const string KeyBailOutMode = "BailOutModeEnabled";
+        private const string KeyShowFailText = "ShowFailText";
+        private const string KeyFailTextDuration = "FailTextDuration";
+
+        public void OnApplicationStart()
+        {
+            CheckForUserDataFolder();
+            SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
+            SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+
+            try
+            {
+                var harmony = HarmonyInstance.Create("com.github.zingabopp.bailoutmode");
+                harmony.PatchAll(Assembly.GetExecutingAssembly());
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("[BailOutMode] This plugin requires Harmony. Make sure you " +
+                    "installed the plugin properly, as the Harmony DLL should have been installed with it.");
+                Console.WriteLine(ex);
+            }
+
+        }
+
+        private void SceneManagerOnActiveSceneChanged(Scene oldScene, Scene newScene)
+        {
+
+            if (newScene.name == "Menu")
+            {
+                //Code to execute when entering The Menu
+
+
+            }
+
+            if (newScene.name == "GameCore")
+            {
+                //Code to execute when entering actual gameplay
+                Harmony_Patches.GameEnergyCounterAddEnergy.failController = new GameObject("LevelFailedEffectController").AddComponent<Harmony_Patches.LevelFailedEffectController>();
+
+            }
+
+
+        }
+
+        private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode arg1)
+        {
+            //Create GameplayOptions/SettingsUI if using either
+            if (scene.name == "Menu")
+                UI.BailOutModeUI.CreateUI();
+
+        }
+
+        public void OnApplicationQuit()
+        {
+            SceneManager.activeSceneChanged -= SceneManagerOnActiveSceneChanged;
+            SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
+        }
+
+        public void OnLevelWasLoaded(int level)
+        {
+
+        }
+
+        public void OnLevelWasInitialized(int level)
+        {
+        }
+
+        public void OnUpdate()
+        {
+
+
+        }
+
+        public void OnFixedUpdate()
+        {
+        }
+
+        public static bool IsEnabled
+        {
+            get
+            {
+                return _isEnabled;
+            }
+            set
+            {
+                ModPrefs.SetBool(Plugin.PluginName, KeyBailOutMode, value);
+                _isEnabled = value;
+            }
+
+        }
+
+        public static bool ShowFailText
+        {
+            get
+            {
+                return _showFailText;
+            }
+            set
+            {
+                ModPrefs.SetBool(Plugin.PluginName, KeyShowFailText, value);
+                _showFailText = value;
+            }
+
+        }
+
+        public static int FailTextDuration
+        {
+            get
+            {
+                return _failTextDuration;
+            }
+            set
+            {
+                ModPrefs.SetInt(Plugin.PluginName, KeyFailTextDuration, value);
+                _failTextDuration = value;
+            }
+        }
+
+        private void CheckForUserDataFolder()
+        {
+            string userDataPath = Environment.CurrentDirectory + "/UserData";
+            if (!Directory.Exists(userDataPath))
+            {
+                Directory.CreateDirectory(userDataPath);
+            }
+            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyBailOutMode, "")))
+            {
+                ModPrefs.SetBool(Plugin.PluginName, Plugin.KeyBailOutMode, IsEnabled);
+            }
+            else
+                IsEnabled = ModPrefs.GetBool(Plugin.PluginName, Plugin.KeyBailOutMode, IsEnabled);
+
+            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyShowFailText, "")))
+            {
+                ModPrefs.SetBool(Plugin.PluginName, Plugin.KeyShowFailText, ShowFailText);
+            }
+            else
+                ShowFailText = ModPrefs.GetBool(Plugin.PluginName, Plugin.KeyShowFailText, ShowFailText);
+
+            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyFailTextDuration, "")))
+            {
+                ModPrefs.SetInt(Plugin.PluginName, Plugin.KeyFailTextDuration, FailTextDuration);
+            }
+            else
+                FailTextDuration = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyFailTextDuration, FailTextDuration);
+
+        }
+    }
+
+
+}

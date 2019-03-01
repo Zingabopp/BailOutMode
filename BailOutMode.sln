@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewBailOutMode", "NewBailOutMode\NewBailOutMode.csproj", "{892A866B-E729-4578-91CE-E2AC6EE06CA4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BailOutMode", "BailOutMode\BailOutMode.csproj", "{892A866B-E729-4578-91CE-E2AC6EE06CA4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
