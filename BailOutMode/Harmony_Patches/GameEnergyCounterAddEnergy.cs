@@ -26,8 +26,9 @@ namespace BailOutMode.Harmony_Patches
                 if (__instance.energy + value <= 0)
                 {
                     BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
+                    Plugin._numFails++;
                     //Console.WriteLine($"{__instance.energy} + {value} puts us <= 0");
-                    value = .5f - __instance.energy;
+                    value = (Plugin.EnergyResetAmount / 100f) - __instance.energy;
                     if (Plugin.ShowFailText)
                     {
                         try
@@ -56,12 +57,6 @@ namespace BailOutMode.Harmony_Patches
             }
             return true;
         }
-        static void Postfix(GameEnergyCounter __instance, ref float value)
-        {
-            //Console.WriteLine($"New energy value: {__instance.energy}, change: {value}");
-        }
-
-
     }
 
     class LevelFailedEffectController : MonoBehaviour

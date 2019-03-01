@@ -23,10 +23,15 @@ namespace BailOutMode
         private static bool _isEnabled = false;
         private static bool _showFailText = true;
         private static int _failTextDuration = 5;
+        private static int _energyReset = 50;
+        public static int _numFails = 0;
 
         private const string KeyBailOutMode = "BailOutModeEnabled";
         private const string KeyShowFailText = "ShowFailText";
         private const string KeyFailTextDuration = "FailTextDuration";
+        private const string KeyEnergyResetAmount = "EnergyResetAmount";
+        public const int nrgResetMin = 30;
+        public const int nrgResetMax = 100;
 
         public void OnApplicationStart()
         {
@@ -63,7 +68,7 @@ namespace BailOutMode
             {
                 //Code to execute when entering actual gameplay
                 Harmony_Patches.GameEnergyCounterAddEnergy.failController = new GameObject("LevelFailedEffectController").AddComponent<Harmony_Patches.LevelFailedEffectController>();
-
+                _numFails = 0;
             }
 
 
@@ -143,6 +148,38 @@ namespace BailOutMode
             }
         }
 
+        public static int EnergyResetAmount
+        {
+            get { return _energyReset; }
+            set
+            {
+                if ((value > nrgResetMin))
+                {
+                    if (value <= nrgResetMax)
+                        _energyReset = GetMultipleOfTen(value);
+                    else
+                        _energyReset = nrgResetMax;
+
+                }
+                ModPrefs.SetInt(Plugin.PluginName, KeyEnergyResetAmount, _energyReset);
+            }
+
+        }
+
+        private static int GetMultipleOfTen(int value)
+        {
+            int remainder = value % 10;
+            if (remainder == 0)
+                return value;
+            else
+            {
+                if ((10 - remainder) > 5)
+                    return value - remainder;
+                else
+                    return value + (10 - remainder);
+            }
+        }
+
         private void CheckForUserDataFolder()
         {
             string userDataPath = Environment.CurrentDirectory + "/UserData";
@@ -169,7 +206,14 @@ namespace BailOutMode
                 ModPrefs.SetInt(Plugin.PluginName, Plugin.KeyFailTextDuration, FailTextDuration);
             }
             else
-                FailTextDuration = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyFailTextDuration, FailTextDuration);
+                FailTextDuration = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyEnergyResetAmount, FailTextDuration);
+
+            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyEnergyResetAmount, "")))
+            {
+                ModPrefs.SetInt(Plugin.PluginName, Plugin.KeyEnergyResetAmount, EnergyResetAmount);
+            }
+            else
+                EnergyResetAmount = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyEnergyResetAmount, EnergyResetAmount);
 
         }
     }

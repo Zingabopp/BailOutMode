@@ -40,7 +40,14 @@ namespace BailOutMode.UI
             failTextDurationOption.SetValue += delegate (int value) {
                 Plugin.FailTextDuration = value;
             };
-            
+
+
+            var nrgResetAmountOption = pluginSettingsSubmenu.AddInt("Energy Reset Amount", "How much energy you get back after failing", Plugin.nrgResetMin, Plugin.nrgResetMax, 10);
+            failTextDurationOption.GetValue += delegate { return Plugin.EnergyResetAmount; };
+            failTextDurationOption.SetValue += delegate (int value) {
+                Plugin.EnergyResetAmount = value;
+            };
+
 
         }
 
