@@ -206,7 +206,7 @@ namespace BailOutMode
                 ModPrefs.SetInt(Plugin.PluginName, Plugin.KeyFailTextDuration, FailTextDuration);
             }
             else
-                FailTextDuration = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyEnergyResetAmount, FailTextDuration);
+                FailTextDuration = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyFailTextDuration, FailTextDuration);
 
             if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyEnergyResetAmount, "")))
             {
