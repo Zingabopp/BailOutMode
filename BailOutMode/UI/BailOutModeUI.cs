@@ -15,13 +15,12 @@ namespace BailOutMode.UI
             CreateSettingsUI();
         }
 
-
-
         public static void CreateSettingsUI()
         {
             //This will create a menu tab in the settings menu for your plugin
             var pluginSettingsSubmenu = SettingsUI.CreateSubMenu("BailOut Mode");
-
+            Logger.Debug("Setting up UI:\n  IsEnabled={0}\n  ShowFailText={1}\n  FailTextDuration={2}\n  EnergyResetAmount={3}",
+                Plugin.IsEnabled, Plugin.ShowFailText, Plugin.FailTextDuration, Plugin.EnergyResetAmount);
             var enableToggle = pluginSettingsSubmenu.AddBool("Enable", "Keep playing songs if you fail, won't post scores if you do");
             enableToggle.GetValue += delegate { return Plugin.IsEnabled; };
             enableToggle.SetValue += delegate (bool value) {
@@ -32,10 +31,9 @@ namespace BailOutMode.UI
             failTextToggle.SetValue += delegate (bool value) {
                 Plugin.ShowFailText = value;
             };
-            
+
             int durationMax = (Plugin.FailTextDuration <= 10) ? 10 : Plugin.FailTextDuration; // If duration setting is more than 10, increase the max to match
-            durationMax = (durationMax >= 0) ? durationMax : 0; // If the duration setting is negative, set to 0
-            var failTextDurationOption = pluginSettingsSubmenu.AddInt("Fail Text Duration","How long the fail text effect lingers, 0 to show it forever", 0, durationMax, 1);
+            var failTextDurationOption = pluginSettingsSubmenu.AddInt("Fail Text Duration", "How long the fail text effect lingers, 0 to show it forever", 0, durationMax, 1);
             failTextDurationOption.GetValue += delegate { return Plugin.FailTextDuration; };
             failTextDurationOption.SetValue += delegate (int value) {
                 Plugin.FailTextDuration = value;
@@ -43,8 +41,8 @@ namespace BailOutMode.UI
 
 
             var nrgResetAmountOption = pluginSettingsSubmenu.AddInt("Energy Reset Amount", "How much energy you get back after failing", Plugin.nrgResetMin, Plugin.nrgResetMax, 10);
-            failTextDurationOption.GetValue += delegate { return Plugin.EnergyResetAmount; };
-            failTextDurationOption.SetValue += delegate (int value) {
+            nrgResetAmountOption.GetValue += delegate { return Plugin.EnergyResetAmount; };
+            nrgResetAmountOption.SetValue += delegate (int value) {
                 Plugin.EnergyResetAmount = value;
             };
 
@@ -53,7 +51,7 @@ namespace BailOutMode.UI
 
         public static void CreateGameplayOptionsUI()
         {
-
+            
             //Example submenu option
             var pluginSubmenu = GameplaySettingsUI.CreateSubmenuOption(GameplaySettingsPanels.ModifiersLeft, "Plugin Name", "MainMenu", "pluginMenu1", "You can keep all your plugin's gameplay options nested within this one button");
 
@@ -62,14 +60,6 @@ namespace BailOutMode.UI
             exampleOption.GetValue = /* Fetch the initial value for the option here*/ false;
             exampleOption.OnToggle += (value) => { /*  You can execute whatever you want to occur when the value is toggled here, usually that would include updating wherever the value is pulled from   */};
             exampleOption.AddConflict("Conflicting Option Name"); //You can add conflicts with other gameplay options settings here, preventing both from being active at the same time, including that of other mods
-
-
-
         }
-
-
-
-
-
     }
 }

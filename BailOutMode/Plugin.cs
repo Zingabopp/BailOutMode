@@ -19,7 +19,7 @@ namespace BailOutMode
         public static string PluginName = "BailOutMode";
         public string Name => PluginName;
         public string Version => "0.1.1";
-
+        
         private static bool _isEnabled = false;
         private static bool _showFailText = true;
         private static int _failTextDuration = 5;
@@ -32,12 +32,26 @@ namespace BailOutMode
         private const string KeyEnergyResetAmount = "EnergyResetAmount";
         public const int nrgResetMin = 30;
         public const int nrgResetMax = 100;
+        private GameScenesManager _scenesManager;
+        public GameScenesManager _gameScenesManager
+        {
+            get
+            {
+                if (_scenesManager == null)
+                {
+                    _scenesManager = Resources.FindObjectsOfTypeAll<GameScenesManager>().FirstOrDefault();
+                }
+                return _scenesManager;
+            }
+        }
 
         public void OnApplicationStart()
         {
+            Logger.LogLevel = LogLevel.Warn;
             CheckForUserDataFolder();
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+            
 
             try
             {
@@ -47,9 +61,8 @@ namespace BailOutMode
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[BailOutMode] This plugin requires Harmony. Make sure you " +
-                    "installed the plugin properly, as the Harmony DLL should have been installed with it.");
-                Console.WriteLine(ex);
+                Logger.Exception("This plugin requires Harmony. Make sure you " +
+                    "installed the plugin properly, as the Harmony DLL should have been installed with it.", ex);
             }
 
         }
@@ -67,11 +80,18 @@ namespace BailOutMode
             if (newScene.name == "GameCore")
             {
                 //Code to execute when entering actual gameplay
-                Harmony_Patches.GameEnergyCounterAddEnergy.failController = new GameObject("LevelFailedEffectController").AddComponent<Harmony_Patches.LevelFailedEffectController>();
+                _gameScenesManager.transitionDidFinishEvent += OnSceneTransitionFinish;
+
                 _numFails = 0;
             }
 
 
+        }
+
+        private void OnSceneTransitionFinish()
+        {
+            new GameObject("LevelFailedEffectController").AddComponent<LevelFailedEffectController>();
+            _gameScenesManager.transitionDidFinishEvent -= OnSceneTransitionFinish;
         }
 
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode arg1)
@@ -88,6 +108,7 @@ namespace BailOutMode
             SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
         }
 
+        #region "Unused"
         public void OnLevelWasLoaded(int level)
         {
 
@@ -106,6 +127,7 @@ namespace BailOutMode
         public void OnFixedUpdate()
         {
         }
+        #endregion
 
         public static bool IsEnabled
         {
@@ -215,6 +237,7 @@ namespace BailOutMode
             else
                 EnergyResetAmount = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyEnergyResetAmount, EnergyResetAmount);
 
+            Logger.Debug("Settings:\n  IsEnabled={0}\n  ShowFailText={1}\n  FailTextDuration={2}\n  EnergyResetAmount={3}", IsEnabled, ShowFailText, FailTextDuration, EnergyResetAmount);
         }
     }
 
