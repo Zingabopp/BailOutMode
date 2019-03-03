@@ -99,15 +99,20 @@ namespace BailOutMode
             Logger.Trace("BailOutController ShowLevelFailed()");
             BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
             FailText.text = $"Bailed Out {Plugin._numFails} time{(Plugin._numFails != 1 ? "s" : "")}";
-            if (!isHiding)
+            if (!isHiding && Plugin.ShowFailEffect)
             {
-                LevelFailedEffect.gameObject.SetActive(true);
-                LevelFailedEffect.ShowEffect();
-                if (Plugin.FailEffectDuration > 0)
-                    StartCoroutine(hideLevelFailed());
-                else
-                    isHiding = true; // Fail text never hides, so don't try to keep showing it
-
+                try
+                {
+                    LevelFailedEffect.gameObject.SetActive(true);
+                    LevelFailedEffect.ShowEffect();
+                    if (Plugin.FailEffectDuration > 0)
+                        StartCoroutine(hideLevelFailed());
+                    else
+                        isHiding = true; // Fail text never hides, so don't try to keep showing it
+                } catch (Exception ex)
+                {
+                    Logger.Exception("Exception trying to show the fail Effect", ex);
+                }
             }
         }
 
