@@ -16,91 +16,36 @@ namespace BailOutMode.Harmony_Patches
         typeof(float)})]
     class GameEnergyCounterAddEnergy
     {
-        public static LevelFailedEffectController failController;
-
         static bool Prefix(GameEnergyCounter __instance, ref float value)
         {
             if (Plugin.IsEnabled && value < 0f)
             {
-                //Console.WriteLine($"{value} < 0");
+                Logger.Trace("Negative energy change detected: {0}", value);
                 if (__instance.energy + value <= 0)
                 {
+                    Logger.Debug("Fail detected. Current Energy: {0}, Energy Change: {1}", __instance.energy, value);
                     BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
                     Plugin._numFails++;
-                    //Console.WriteLine($"{__instance.energy} + {value} puts us <= 0");
+                    Logger.Debug($"{__instance.energy} + {value} puts us <= 0");
                     value = (Plugin.EnergyResetAmount / 100f) - __instance.energy;
+                    Logger.Debug("Changing value to {0} to raise energy to {1}", value, Plugin.EnergyResetAmount);
                     if (Plugin.ShowFailText)
                     {
                         try
                         {
-                            if (failController == null)
-                            {
-                                failController = GameObject.FindObjectsOfType<LevelFailedEffectController>().FirstOrDefault();
-                                if (failController == null)
-                                {
-                                    failController = new GameObject("LevelFailedEffectController").AddComponent<LevelFailedEffectController>();
-                                }
-                            }
-
-                            if (failController != null)
-                                failController.ShowLevelFailed();
-
+                            Logger.Debug("Trying to show LevelFailedText");
+                            LevelFailedEffectController.Instance.ShowLevelFailed();
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"{ex.Message}\n{ex.StackTrace}");
+                            Logger.Exception("Exception trying to show the fail text", ex);
                         }
                     }
-
-
                 }
             }
             return true;
         }
     }
 
-    class LevelFailedEffectController : MonoBehaviour
-    {
-        public static LevelFailedEffectController Instance;
-        public static bool isHiding = false;
-        private static LevelFailedTextEffect levelFailedText;
-        public void Start()
-        {
-            if (Instance != null)
-            {
-                Destroy(Instance);
-            }
-            Instance = this;
-            isHiding = false;
-            levelFailedText = GameObject.FindObjectsOfType<LevelFailedTextEffect>().FirstOrDefault();
-        }
-
-        public void ShowLevelFailed()
-        {
-            if (!isHiding)
-            {
-                levelFailedText.gameObject.SetActive(true);
-                GameObject.FindObjectsOfType<LevelFailedTextEffect>().ToList().ForEach(tfx => {
-
-                    tfx.ShowEffect();
-                    if (Plugin.FailTextDuration > 0)
-                        StartCoroutine(hideLevelFailed());
-                    else
-                        isHiding = true; // Fail text never hides, so don't try to keep showing it
-                });
-            }
-        }
-
-        public IEnumerator<WaitForSeconds> hideLevelFailed()
-        {
-            if (!isHiding)
-            {
-                isHiding = true;
-                yield return new WaitForSeconds(Plugin.FailTextDuration);
-                GameObject.FindObjectsOfType<LevelFailedTextEffect>().ToList().ForEach(f => { f.gameObject.SetActive(false); });
-                isHiding = false;
-            }
-            yield return new WaitForSeconds(0);
-        }
-    }
+   
 }
