@@ -92,7 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Harmony_Patches\GameEnergyCounterAddEnergy.cs" />
-    <Compile Include="LevelFailedEffectController.cs" />
+    <Compile Include="BailOutController.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

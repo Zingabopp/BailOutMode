@@ -19,24 +19,24 @@ namespace BailOutMode.UI
         {
             //This will create a menu tab in the settings menu for your plugin
             var pluginSettingsSubmenu = SettingsUI.CreateSubMenu("BailOut Mode");
-            Logger.Debug("Setting up UI:\n  IsEnabled={0}\n  ShowFailText={1}\n  FailTextDuration={2}\n  EnergyResetAmount={3}",
-                Plugin.IsEnabled, Plugin.ShowFailText, Plugin.FailTextDuration, Plugin.EnergyResetAmount);
+            Logger.Debug("Setting up UI:\n  IsEnabled={0}\n  ShowFailEffect={1}\n  FailEffectDuration={2}\n  EnergyResetAmount={3}",
+                Plugin.IsEnabled, Plugin.ShowFailEffect, Plugin.FailEffectDuration, Plugin.EnergyResetAmount);
             var enableToggle = pluginSettingsSubmenu.AddBool("Enable", "Keep playing songs if you fail, won't post scores if you do");
             enableToggle.GetValue += delegate { return Plugin.IsEnabled; };
             enableToggle.SetValue += delegate (bool value) {
                 Plugin.IsEnabled = value;
             };
-            var failTextToggle = pluginSettingsSubmenu.AddBool("Show Fail Text", "Show the fail text effect when you would've failed");
-            failTextToggle.GetValue += delegate { return Plugin.ShowFailText; };
-            failTextToggle.SetValue += delegate (bool value) {
-                Plugin.ShowFailText = value;
+            var failEffectToggle = pluginSettingsSubmenu.AddBool("Show Fail Effect", "Show the fail text effect when you would've failed");
+            failEffectToggle.GetValue += delegate { return Plugin.ShowFailEffect; };
+            failEffectToggle.SetValue += delegate (bool value) {
+                Plugin.ShowFailEffect = value;
             };
 
-            int durationMax = (Plugin.FailTextDuration <= 10) ? 10 : Plugin.FailTextDuration; // If duration setting is more than 10, increase the max to match
-            var failTextDurationOption = pluginSettingsSubmenu.AddInt("Fail Text Duration", "How long the fail text effect lingers, 0 to show it forever", 0, durationMax, 1);
-            failTextDurationOption.GetValue += delegate { return Plugin.FailTextDuration; };
-            failTextDurationOption.SetValue += delegate (int value) {
-                Plugin.FailTextDuration = value;
+            int durationMax = (Plugin.FailEffectDuration <= 10) ? 10 : Plugin.FailEffectDuration; // If duration setting is more than 10, increase the max to match
+            var failEffectDurationOption = pluginSettingsSubmenu.AddInt("Fail Effect Duration", "How long the fail text effect lingers, 0 to show it forever", 0, durationMax, 1);
+            failEffectDurationOption.GetValue += delegate { return Plugin.FailEffectDuration; };
+            failEffectDurationOption.SetValue += delegate (int value) {
+                Plugin.FailEffectDuration = value;
             };
 
 

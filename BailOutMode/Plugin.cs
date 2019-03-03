@@ -21,15 +21,17 @@ namespace BailOutMode
         public string Version => "0.1.1";
         
         private static bool _isEnabled = false;
-        private static bool _showFailText = true;
-        private static int _failTextDuration = 5;
+        private static bool _showFailEffect = true;
+        private static int _failEffectDuration = 5;
         private static int _energyReset = 50;
+        private static string _counterPosition = "0,.3,2.5";
         public static int _numFails = 0;
 
         private const string KeyBailOutMode = "BailOutModeEnabled";
-        private const string KeyShowFailText = "ShowFailText";
-        private const string KeyFailTextDuration = "FailTextDuration";
+        private const string KeyShowFailEffect = "ShowFailEffect";
+        private const string KeyFailEffectDuration = "FailEffectDuration";
         private const string KeyEnergyResetAmount = "EnergyResetAmount";
+        private const string KeyCounterTextPosition = "FailCounterPosition";
         public const int nrgResetMin = 30;
         public const int nrgResetMax = 100;
         private GameScenesManager _scenesManager;
@@ -73,8 +75,6 @@ namespace BailOutMode
             if (newScene.name == "Menu")
             {
                 //Code to execute when entering The Menu
-
-
             }
 
             if (newScene.name == "GameCore")
@@ -90,7 +90,7 @@ namespace BailOutMode
 
         private void OnSceneTransitionFinish()
         {
-            new GameObject("LevelFailedEffectController").AddComponent<LevelFailedEffectController>();
+            new GameObject("BailOutController").AddComponent<BailOutController>();
             _gameScenesManager.transitionDidFinishEvent -= OnSceneTransitionFinish;
         }
 
@@ -143,30 +143,30 @@ namespace BailOutMode
 
         }
 
-        public static bool ShowFailText
+        public static bool ShowFailEffect
         {
             get
             {
-                return _showFailText;
+                return _showFailEffect;
             }
             set
             {
-                ModPrefs.SetBool(Plugin.PluginName, KeyShowFailText, value);
-                _showFailText = value;
+                ModPrefs.SetBool(Plugin.PluginName, KeyShowFailEffect, value);
+                _showFailEffect = value;
             }
 
         }
 
-        public static int FailTextDuration
+        public static int FailEffectDuration
         {
             get
             {
-                return _failTextDuration;
+                return _failEffectDuration;
             }
             set
             {
-                ModPrefs.SetInt(Plugin.PluginName, KeyFailTextDuration, value);
-                _failTextDuration = value;
+                ModPrefs.SetInt(Plugin.PluginName, KeyFailEffectDuration, value);
+                _failEffectDuration = value;
             }
         }
 
@@ -187,6 +187,14 @@ namespace BailOutMode
             }
 
         }
+
+        public static string CounterPosition
+        {
+            get { return _counterPosition; }
+            set { _counterPosition = value; }
+        }
+
+        
 
         private static int GetMultipleOfTen(int value)
         {
@@ -216,19 +224,19 @@ namespace BailOutMode
             else
                 IsEnabled = ModPrefs.GetBool(Plugin.PluginName, Plugin.KeyBailOutMode, IsEnabled);
 
-            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyShowFailText, "")))
+            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyShowFailEffect, "")))
             {
-                ModPrefs.SetBool(Plugin.PluginName, Plugin.KeyShowFailText, ShowFailText);
+                ModPrefs.SetBool(Plugin.PluginName, Plugin.KeyShowFailEffect, ShowFailEffect);
             }
             else
-                ShowFailText = ModPrefs.GetBool(Plugin.PluginName, Plugin.KeyShowFailText, ShowFailText);
+                ShowFailEffect = ModPrefs.GetBool(Plugin.PluginName, Plugin.KeyShowFailEffect, ShowFailEffect);
 
-            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyFailTextDuration, "")))
+            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyFailEffectDuration, "")))
             {
-                ModPrefs.SetInt(Plugin.PluginName, Plugin.KeyFailTextDuration, FailTextDuration);
+                ModPrefs.SetInt(Plugin.PluginName, Plugin.KeyFailEffectDuration, FailEffectDuration);
             }
             else
-                FailTextDuration = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyFailTextDuration, FailTextDuration);
+                FailEffectDuration = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyFailEffectDuration, FailEffectDuration);
 
             if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyEnergyResetAmount, "")))
             {
@@ -237,7 +245,15 @@ namespace BailOutMode
             else
                 EnergyResetAmount = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyEnergyResetAmount, EnergyResetAmount);
 
-            Logger.Debug("Settings:\n  IsEnabled={0}\n  ShowFailText={1}\n  FailTextDuration={2}\n  EnergyResetAmount={3}", IsEnabled, ShowFailText, FailTextDuration, EnergyResetAmount);
+            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyCounterTextPosition, "")))
+            {
+                ModPrefs.SetString(Plugin.PluginName, Plugin.KeyCounterTextPosition, CounterPosition);
+            }
+            else
+                CounterPosition = ModPrefs.GetString(Plugin.PluginName, Plugin.KeyCounterTextPosition, CounterPosition);
+
+            Logger.Debug("Settings:\n  IsEnabled={0}\n  ShowFailEffect={1}\n  FailEffectDuration={2}\n  EnergyResetAmount={3}\n  CounterPosition={4}", 
+                IsEnabled, ShowFailEffect, FailEffectDuration, EnergyResetAmount, CounterPosition);
         }
     }
 
