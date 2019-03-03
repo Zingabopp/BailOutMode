@@ -10,3 +10,9 @@
 <li>You can change the position of the fail counter text in UserData\modprefs.ini with the FailCounterPosition setting. The format is "#,#,#" (i.e. FailCounterPosition=0,.3,2.5). It represents the x,y,z of the text from the middle of the platform (where the feet are).</li>
 <li>If enabled, the Level Failed effect will show whenever your energy reaches 0. It will disappear after the set duration. If duration is set to 0, it will stay up until the end of the song.</li>
 </u1>
+<h2>Dependencies</h2>
+<u1>
+<li><a href="https://www.modsaber.org/mod/bs-utils">BS_Utils</a> by Kyle1413</li>
+<li><a href="https://www.modsaber.org/mod/customui/">CustomUI</a> by Brian</li>
+<li><a href="https://github.com/pardeike/Harmony">Harmony</a> by Pardeike</li>
+</u1>
