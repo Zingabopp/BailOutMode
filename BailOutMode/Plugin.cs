@@ -18,7 +18,7 @@ namespace BailOutMode
     {
         public static string PluginName = "BailOutMode";
         public string Name => PluginName;
-        public string Version => "0.1.1";
+        public string Version => "1.0.0";
         
         private static bool _isEnabled = false;
         private static bool _showFailEffect = true;
