@@ -29,16 +29,16 @@ namespace BailOutMode.Harmony_Patches
                     Logger.Debug($"{__instance.energy} + {value} puts us <= 0");
                     value = (Plugin.EnergyResetAmount / 100f) - __instance.energy;
                     Logger.Debug("Changing value to {0} to raise energy to {1}", value, Plugin.EnergyResetAmount);
-                    if (Plugin.ShowFailText)
+                    if (Plugin.ShowFailEffect)
                     {
                         try
                         {
-                            Logger.Debug("Trying to show LevelFailedText");
-                            LevelFailedEffectController.Instance.ShowLevelFailed();
+                            Logger.Debug("Trying to show LevelFailedEffect");
+                            BailOutController.Instance.ShowLevelFailed();
                         }
                         catch (Exception ex)
                         {
-                            Logger.Exception("Exception trying to show the fail text", ex);
+                            Logger.Exception("Exception trying to show the fail Effect", ex);
                         }
                     }
                 }
