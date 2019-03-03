@@ -55,7 +55,7 @@ namespace BailOutMode
 
             customUIExists = IllusionInjector.PluginManager.Plugins.Any(x => x.Name == "BeatSaberCustomUI");
             bsUtilsExists = IllusionInjector.PluginManager.Plugins.Any(x => x.Name == "Beat Saber Utils");
-
+            
             if (!bsUtilsExists)
             {
                 Logger.Error($"Missing critical dependency: Beat Saber Utils, unable to start");
@@ -88,7 +88,11 @@ namespace BailOutMode
 
         private void SceneManagerOnActiveSceneChanged(Scene oldScene, Scene newScene)
         {
-
+            if (BailOutController.InstanceExists)
+            {
+                GameObject.Destroy(BailOutController.Instance);
+                Logger.Debug("Found controller onActiveSceneChanged, destroyed it");
+            }
             if (newScene.name == "Menu")
             {
                 //Code to execute when entering The Menu
@@ -100,12 +104,11 @@ namespace BailOutMode
                 _gameScenesManager.transitionDidFinishEvent += OnSceneTransitionFinish;
                 _numFails = 0;
             }
-
-
         }
 
         private void OnSceneTransitionFinish()
         {
+            Logger.Debug("OnSceneTransitionFinished: Creating new BailOutController");
             new GameObject("BailOutController").AddComponent<BailOutController>();
             _gameScenesManager.transitionDidFinishEvent -= OnSceneTransitionFinish;
         }

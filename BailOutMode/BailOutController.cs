@@ -11,17 +11,19 @@ namespace BailOutMode
     {
         #region "Fields with get/setters"
         private static BailOutController _instance;
-        private static LevelFailedTextEffect _levelFailedEffect;
-        private static StandardLevelGameplayManager _gameManager;
-        private static GameEnergyCounter _energyCounter;
-        private static TextMeshProUGUI _failText;
+        private LevelFailedTextEffect _levelFailedEffect;
+        private StandardLevelGameplayManager _gameManager;
+        private GameEnergyCounter _energyCounter;
+        private TextMeshProUGUI _failText;
+        private PlayerSpecificSettings _playerSettings;
+        private StandardLevelSceneSetup _standardLevelSceneSetup;
         #endregion
         #region "Fields"
-        public static bool isHiding = false;
+        public bool isHiding = false;
         public static int numFails = 0;
         public static float failTextFontSize = 20f;
 
-        public static TextMeshProUGUI FailText
+        public TextMeshProUGUI FailText
         {
             get
             {
@@ -32,7 +34,7 @@ namespace BailOutMode
             set { _failText = value; }
         }
 
-        private static LevelFailedTextEffect LevelFailedEffect
+        private LevelFailedTextEffect LevelFailedEffect
         {
             get
             {
@@ -42,7 +44,7 @@ namespace BailOutMode
             }
             set { _levelFailedEffect = value; }
         }
-        private static StandardLevelGameplayManager GameManager
+        private StandardLevelGameplayManager GameManager
         {
             get
             {
@@ -51,7 +53,17 @@ namespace BailOutMode
                 return _gameManager;
             }
         }
-        private static GameEnergyCounter EnergyCounter
+
+        private StandardLevelSceneSetup standardLevelSceneSetup
+        {
+            get
+            {
+                if (_standardLevelSceneSetup == null)
+                    _standardLevelSceneSetup = GameObject.FindObjectsOfType<StandardLevelSceneSetup>().FirstOrDefault();
+                return _standardLevelSceneSetup;
+            }
+        }
+        private GameEnergyCounter EnergyCounter
         {
             get
             {
@@ -60,6 +72,26 @@ namespace BailOutMode
                 return _energyCounter;
             }
         }
+        private PlayerSpecificSettings PlayerSettings
+        {
+            get
+            {
+                if (_playerSettings == null)
+                {
+                    _playerSettings = standardLevelSceneSetup?.standardLevelSceneSetupData?.gameplayCoreSetupData?.playerSpecificSettings;
+                    if (_playerSettings != null)
+                    {
+                        Logger.Debug("Found PlayerSettings");
+                    }
+                    else
+                        Logger.Warning($"Unable to find PlayerSettings");
+                }
+                else
+                    Logger.Trace("PlayerSettings already exists, don't need to find it");
+                return _playerSettings;
+            }
+        }
+        private float PlayerHeight;
         public static BailOutController Instance
         {
             get
@@ -72,6 +104,11 @@ namespace BailOutMode
                 return _instance;
             }
         }
+        public static bool InstanceExists
+        {
+            get { return _instance != null; }
+        }
+
         #endregion
 
         public void Awake()
@@ -90,7 +127,15 @@ namespace BailOutMode
                 Logger.Trace("Removing HandleGameEnergyDidReach0");
                 EnergyCounter.gameEnergyDidReach0Event -= GameManager.HandleGameEnergyDidReach0;
             }
+            if (PlayerSettings != null)
+                PlayerHeight = PlayerSettings.playerHeight;
+            else
+                PlayerHeight = 1.8f;
+        }
 
+        private void OnDestroy()
+        {
+            Logger.Debug("Destroying BailOutController");
         }
 
 
@@ -135,14 +180,11 @@ namespace BailOutMode
 
         public static void FacePosition(Transform obj, Vector3 targetPos)
         {
-            
-            targetPos = new Vector3(0, 1.7f, 0);
             var rotAngle = Quaternion.LookRotation(obj.position - targetPos);
             obj.rotation = rotAngle;
-
         }
 
-        public static TextMeshProUGUI CreateFailText(string text, float yOffset = 0)
+        public TextMeshProUGUI CreateFailText(string text, float yOffset = 0)
         {
             var textGO = new GameObject();
             textGO.transform.position = StringToVector3(Plugin.CounterPosition);
@@ -151,9 +193,10 @@ namespace BailOutMode
             var textCanvas = textGO.AddComponent<Canvas>();
             textCanvas.renderMode = RenderMode.WorldSpace;
             (textCanvas.transform as RectTransform).sizeDelta = new Vector2(200f, 50f);
-            FacePosition(textCanvas.transform, new Vector3(0, 1.7f, 0));
+            
+            FacePosition(textCanvas.transform, new Vector3(0, PlayerHeight, 0));
             TextMeshProUGUI textMeshProUGUI = new GameObject("BailOutFailText").AddComponent<TextMeshProUGUI>();
-
+            
             RectTransform rectTransform = textMeshProUGUI.transform as RectTransform;
             rectTransform.anchoredPosition = new Vector2(0f, 0f);
             rectTransform.sizeDelta = new Vector2(400f, 20f);
