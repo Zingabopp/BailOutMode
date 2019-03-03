@@ -18,8 +18,8 @@ namespace BailOutMode
     {
         public static string PluginName = "BailOutMode";
         public string Name => PluginName;
-        public string Version => "1.0.0";
-        
+        public string Version => "1.0.1";
+
         private static bool _isEnabled = false;
         private static bool _showFailEffect = true;
         private static int _failEffectDuration = 5;
@@ -34,6 +34,8 @@ namespace BailOutMode
         private const string KeyCounterTextPosition = "FailCounterPosition";
         public const int nrgResetMin = 30;
         public const int nrgResetMax = 100;
+        bool bsUtilsExists;
+        bool customUIExists;
         private GameScenesManager _scenesManager;
         public GameScenesManager _gameScenesManager
         {
@@ -50,10 +52,25 @@ namespace BailOutMode
         public void OnApplicationStart()
         {
             Logger.LogLevel = LogLevel.Warn;
+
+            customUIExists = IllusionInjector.PluginManager.Plugins.Any(x => x.Name == "BeatSaberCustomUI");
+            bsUtilsExists = IllusionInjector.PluginManager.Plugins.Any(x => x.Name == "Beat Saber Utils");
+
+            if (!bsUtilsExists)
+            {
+                Logger.Error($"Missing critical dependency: Beat Saber Utils, unable to start");
+                return;
+            }
+            if (!customUIExists)
+            {
+                Logger.Warning($"Missing dependency: Beat Saber CustomUI, settings will not be available in game.");
+                return;
+            }
+
             CheckForUserDataFolder();
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
             SceneManager.sceneLoaded += SceneManager_sceneLoaded;
-            
+
 
             try
             {
@@ -81,7 +98,6 @@ namespace BailOutMode
             {
                 //Code to execute when entering actual gameplay
                 _gameScenesManager.transitionDidFinishEvent += OnSceneTransitionFinish;
-
                 _numFails = 0;
             }
 
@@ -97,7 +113,7 @@ namespace BailOutMode
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode arg1)
         {
             //Create GameplayOptions/SettingsUI if using either
-            if (scene.name == "Menu")
+            if (customUIExists && scene.name == "Menu")
                 UI.BailOutModeUI.CreateUI();
 
         }
@@ -194,7 +210,7 @@ namespace BailOutMode
             set { _counterPosition = value; }
         }
 
-        
+
 
         private static int GetMultipleOfTen(int value)
         {
@@ -252,7 +268,7 @@ namespace BailOutMode
             else
                 CounterPosition = ModPrefs.GetString(Plugin.PluginName, Plugin.KeyCounterTextPosition, CounterPosition);
 
-            Logger.Debug("Settings:\n  IsEnabled={0}\n  ShowFailEffect={1}\n  FailEffectDuration={2}\n  EnergyResetAmount={3}\n  CounterPosition={4}", 
+            Logger.Debug("Settings:\n  IsEnabled={0}\n  ShowFailEffect={1}\n  FailEffectDuration={2}\n  EnergyResetAmount={3}\n  CounterPosition={4}",
                 IsEnabled, ShowFailEffect, FailEffectDuration, EnergyResetAmount, CounterPosition);
         }
     }
