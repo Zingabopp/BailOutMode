@@ -19,8 +19,8 @@ namespace BailOutMode.UI
         {
             //This will create a menu tab in the settings menu for your plugin
             var pluginSettingsSubmenu = SettingsUI.CreateSubMenu("BailOut Mode");
-            Logger.Debug("Setting up UI:\n  IsEnabled={0}\n  ShowFailEffect={1}\n  FailEffectDuration={2}\n  EnergyResetAmount={3}",
-                Plugin.IsEnabled, Plugin.ShowFailEffect, Plugin.FailEffectDuration, Plugin.EnergyResetAmount);
+            Logger.Debug("Setting up UI:\n  IsEnabled={0}\n  ShowFailEffect={1}\n  RepeatedFailEffect={2}\n  FailEffectDuration={3}\n  EnergyResetAmount={4}",
+                Plugin.IsEnabled, Plugin.ShowFailEffect, Plugin.RepeatFailEffect, Plugin.FailEffectDuration, Plugin.EnergyResetAmount);
             var enableToggle = pluginSettingsSubmenu.AddBool("Enable", "Keep playing songs if you fail, won't post scores if you do");
             enableToggle.GetValue += delegate { return Plugin.IsEnabled; };
             enableToggle.SetValue += delegate (bool value) {
@@ -51,7 +51,7 @@ namespace BailOutMode.UI
 
         public static void CreateGameplayOptionsUI()
         {
-            
+
             //Example submenu option
             var pluginSubmenu = GameplaySettingsUI.CreateSubmenuOption(GameplaySettingsPanels.ModifiersLeft, "Plugin Name", "MainMenu", "pluginMenu1", "You can keep all your plugin's gameplay options nested within this one button");
 

@@ -18,17 +18,18 @@ namespace BailOutMode.Harmony_Patches
     {
         static bool Prefix(GameEnergyCounter __instance, ref float value)
         {
+            //Logger.Trace("In GameEnergyCounter.AddEnergy()");
             if (Plugin.IsEnabled && value < 0f)
             {
-                Logger.Trace("Negative energy change detected: {0}", value);
+                //Logger.Trace("Negative energy change detected: {0}", value);
                 if (__instance.energy + value <= 0)
                 {
-                    Logger.Debug("Fail detected. Current Energy: {0}, Energy Change: {1}", __instance.energy, value);
+                    //Logger.Debug("Fail detected. Current Energy: {0}, Energy Change: {1}", __instance.energy, value);
                     BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
                     Plugin._numFails++;
-                    Logger.Debug($"{__instance.energy} + {value} puts us <= 0");
+                    //Logger.Debug($"{__instance.energy} + {value} puts us <= 0");
                     value = (Plugin.EnergyResetAmount / 100f) - __instance.energy;
-                    Logger.Debug("Changing value to {0} to raise energy to {1}", value, Plugin.EnergyResetAmount);
+                    //Logger.Debug("Changing value to {0} to raise energy to {1}", value, Plugin.EnergyResetAmount);
                     BailOutController.Instance.ShowLevelFailed();
                 }
             }

@@ -18,17 +18,19 @@ namespace BailOutMode
     {
         public static string PluginName = "BailOutMode";
         public string Name => PluginName;
-        public string Version => "1.0.2";
+        public string Version => "1.1.0";
 
         private static bool _isEnabled = false;
         private static bool _showFailEffect = true;
+        private static bool _repeatFailEffect = false;
         private static int _failEffectDuration = 5;
         private static int _energyReset = 50;
-        private static string _counterPosition = "0,.3,2.5";
+        private static string _counterPosition = "0,1.2,2.5";
         public static int _numFails = 0;
 
         private const string KeyBailOutMode = "BailOutModeEnabled";
         private const string KeyShowFailEffect = "ShowFailEffect";
+        private const string KeyRepeatFailEffect = "RepeatFailEffect";
         private const string KeyFailEffectDuration = "FailEffectDuration";
         private const string KeyEnergyResetAmount = "EnergyResetAmount";
         private const string KeyCounterTextPosition = "FailCounterPosition";
@@ -51,7 +53,7 @@ namespace BailOutMode
 
         public void OnApplicationStart()
         {
-            Logger.LogLevel = LogLevel.Warn;
+            Logger.LogLevel = LogLevel.Info;
 
             customUIExists = IllusionInjector.PluginManager.Plugins.Any(x => x.Name == "BeatSaberCustomUI");
             bsUtilsExists = IllusionInjector.PluginManager.Plugins.Any(x => x.Name == "Beat Saber Utils");
@@ -64,19 +66,19 @@ namespace BailOutMode
             if (!customUIExists)
             {
                 Logger.Warning($"Missing dependency: Beat Saber CustomUI, settings will not be available in game.");
-                return;
+                //return;
             }
+            else
+                SceneManager.sceneLoaded += SceneManager_sceneLoaded;
 
             CheckForUserDataFolder();
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
-            SceneManager.sceneLoaded += SceneManager_sceneLoaded;
-
-
+            
+            
             try
             {
                 var harmony = HarmonyInstance.Create("com.github.zingabopp.bailoutmode");
                 harmony.PatchAll(Assembly.GetExecutingAssembly());
-
             }
             catch (Exception ex)
             {
@@ -88,14 +90,18 @@ namespace BailOutMode
 
         private void SceneManagerOnActiveSceneChanged(Scene oldScene, Scene newScene)
         {
+            Logger.Trace($"In scene {newScene.name} from {oldScene.name}");
             if (BailOutController.InstanceExists)
             {
                 GameObject.Destroy(BailOutController.Instance);
                 Logger.Debug("Found controller onActiveSceneChanged, destroyed it");
             }
-            if (newScene.name == "Menu")
+            if (newScene.name == "MenuCore")
             {
                 //Code to execute when entering The Menu
+                //var boCtrl = new GameObject("BailOutController").AddComponent<BailOutController>();
+                //boCtrl.FailText.text = "Testing";
+
             }
 
             if (newScene.name == "GameCore")
@@ -108,7 +114,7 @@ namespace BailOutMode
 
         private void OnSceneTransitionFinish()
         {
-            Logger.Debug("OnSceneTransitionFinished: Creating new BailOutController");
+            //Logger.Debug("OnSceneTransitionFinished: Creating new BailOutController");
             new GameObject("BailOutController").AddComponent<BailOutController>();
             _gameScenesManager.transitionDidFinishEvent -= OnSceneTransitionFinish;
         }
@@ -116,7 +122,7 @@ namespace BailOutMode
         private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode arg1)
         {
             //Create GameplayOptions/SettingsUI if using either
-            if (customUIExists && scene.name == "Menu")
+            if (customUIExists && scene.name == "MenuCore")
                 UI.BailOutModeUI.CreateUI();
 
         }
@@ -172,6 +178,20 @@ namespace BailOutMode
             {
                 ModPrefs.SetBool(Plugin.PluginName, KeyShowFailEffect, value);
                 _showFailEffect = value;
+            }
+
+        }
+
+        public static bool RepeatFailEffect
+        {
+            get
+            {
+                return _repeatFailEffect;
+            }
+            set
+            {
+                ModPrefs.SetBool(Plugin.PluginName, KeyRepeatFailEffect, value);
+                _repeatFailEffect = value;
             }
 
         }
@@ -249,6 +269,13 @@ namespace BailOutMode
             }
             else
                 ShowFailEffect = ModPrefs.GetBool(Plugin.PluginName, Plugin.KeyShowFailEffect, ShowFailEffect);
+
+            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyRepeatFailEffect, "")))
+            {
+                ModPrefs.SetBool(Plugin.PluginName, Plugin.KeyRepeatFailEffect, RepeatFailEffect);
+            }
+            else
+                RepeatFailEffect = ModPrefs.GetBool(Plugin.PluginName, Plugin.KeyRepeatFailEffect, RepeatFailEffect);
 
             if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyFailEffectDuration, "")))
             {
