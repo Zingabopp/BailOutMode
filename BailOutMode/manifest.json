@@ -1,0 +1,13 @@
+{
+  "$schema": "https://github.com/nike4613/BSIPA-MetadataFileSchema/blob/master/Schema.json",
+  "name": "BailOutMode",
+  "id": "bailoutmode",
+  "description": "Allows you to continue playing songs without posting a score if you fail, but allows you to post scores if you don't.",
+  "version": "1.2.0",
+  "gameVersion": "0.13.2",
+  "author": "Zingabopp",
+  "dependsOn": {
+  },
+  "features": [
+  ]
+}

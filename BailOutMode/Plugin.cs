@@ -8,13 +8,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using IllusionPlugin;
+using IPA;
 using Harmony;
 using System.Reflection;
 
 
 namespace BailOutMode
 {
-    public class Plugin : IPlugin
+    public class Plugin : IBeatSaberPlugin
     {
         public static string PluginName = "BailOutMode";
         public string Name => PluginName;
@@ -55,9 +56,9 @@ namespace BailOutMode
         {
             Logger.LogLevel = LogLevel.Info;
 
-            customUIExists = IllusionInjector.PluginManager.Plugins.Any(x => x.Name == "BeatSaberCustomUI");
-            bsUtilsExists = IllusionInjector.PluginManager.Plugins.Any(x => x.Name == "Beat Saber Utils");
-            
+            customUIExists = IPA.Loader.PluginManager.AllPlugins.FirstOrDefault(c => c.Metadata.Name == "BeatSaberCustomUI") != null;
+            bsUtilsExists = IPA.Loader.PluginManager.AllPlugins.FirstOrDefault(c => c.Metadata.Name == "BS_Utils") != null;
+
             if (!bsUtilsExists)
             {
                 Logger.Error($"Missing critical dependency: Beat Saber Utils, unable to start");
@@ -68,11 +69,8 @@ namespace BailOutMode
                 Logger.Warning($"Missing dependency: Beat Saber CustomUI, settings will not be available in game.");
                 //return;
             }
-            else
-                SceneManager.sceneLoaded += SceneManager_sceneLoaded;
 
             CheckForUserDataFolder();
-            SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
             
             
             try
@@ -88,7 +86,32 @@ namespace BailOutMode
 
         }
 
-        private void SceneManagerOnActiveSceneChanged(Scene oldScene, Scene newScene)
+
+        private void OnSceneTransitionFinish()
+        {
+            //Logger.Debug("OnSceneTransitionFinished: Creating new BailOutController");
+            new GameObject("BailOutController").AddComponent<BailOutController>();
+            _gameScenesManager.transitionDidFinishEvent -= OnSceneTransitionFinish;
+        }
+
+        public void OnApplicationQuit()
+        {
+
+        }
+
+        public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
+        {
+            //Create GameplayOptions/SettingsUI if using either
+            if (customUIExists && scene.name == "MenuCore")
+                UI.BailOutModeUI.CreateUI();
+        }
+
+        public void OnSceneUnloaded(Scene scene)
+        {
+            
+        }
+
+        public void OnActiveSceneChanged(Scene oldScene, Scene newScene)
         {
             Logger.Trace($"In scene {newScene.name} from {oldScene.name}");
             if (BailOutController.InstanceExists)
@@ -112,27 +135,6 @@ namespace BailOutMode
             }
         }
 
-        private void OnSceneTransitionFinish()
-        {
-            //Logger.Debug("OnSceneTransitionFinished: Creating new BailOutController");
-            new GameObject("BailOutController").AddComponent<BailOutController>();
-            _gameScenesManager.transitionDidFinishEvent -= OnSceneTransitionFinish;
-        }
-
-        private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode arg1)
-        {
-            //Create GameplayOptions/SettingsUI if using either
-            if (customUIExists && scene.name == "MenuCore")
-                UI.BailOutModeUI.CreateUI();
-
-        }
-
-        public void OnApplicationQuit()
-        {
-            SceneManager.activeSceneChanged -= SceneManagerOnActiveSceneChanged;
-            SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
-        }
-
         #region "Unused"
         public void OnLevelWasLoaded(int level)
         {
@@ -145,8 +147,12 @@ namespace BailOutMode
 
         public void OnUpdate()
         {
-
-
+            /*
+            if(UnityEngine.Input.GetKeyDown(KeyCode.U))
+            {
+                Console.WriteLine($"GameMode: {BS_Utils.Gameplay.Gamemode.GameMode}");
+            }
+            */
         }
 
         public void OnFixedUpdate()
@@ -158,6 +164,8 @@ namespace BailOutMode
         {
             get
             {
+                if (BS_Utils.Gameplay.Gamemode.GameMode == "Campaign")
+                    return false;
                 return _isEnabled;
             }
             set
@@ -301,6 +309,8 @@ namespace BailOutMode
             Logger.Debug("Settings:\n  IsEnabled={0}\n  ShowFailEffect={1}\n  FailEffectDuration={2}\n  EnergyResetAmount={3}\n  CounterPosition={4}",
                 IsEnabled, ShowFailEffect, FailEffectDuration, EnergyResetAmount, CounterPosition);
         }
+
+        
     }
 
 
