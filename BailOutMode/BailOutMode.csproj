@@ -96,7 +96,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Config.cs" />
     <Compile Include="Harmony_Patches\GameEnergyCounterAddEnergy.cs" />
     <Compile Include="BailOutController.cs" />
     <Compile Include="Logger.cs" />
