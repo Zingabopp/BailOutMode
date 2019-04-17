@@ -7,7 +7,6 @@ using System.Media;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using IllusionPlugin;
 using IPA;
 using Harmony;
 using System.Reflection;
@@ -15,19 +14,44 @@ using System.Reflection;
 
 namespace BailOutMode
 {
+    public struct DefaultSettings
+    {
+        public const bool IsEnabled = true;
+        public const bool ShowFailEffect = true;
+        public const bool RepeatFailEffect = false;
+        public const bool DynamicSettings = false;
+        public const int EnergyResetAmount = 50;
+        public const float CounterTextSize = 15f;
+        public const int FailEffectDuration = 3;
+
+        public struct CounterTextPosition
+        {
+            public const float x = 0;
+            public const float y = 0;
+            public const float z = 2f;
+            public static string AsString()
+            {
+                return $"{x},{y},{z}";
+            }
+        }
+        
+    }
     public class Plugin : IBeatSaberPlugin
     {
         public static string PluginName = "BailOutMode";
         public string Name => PluginName;
         public string Version => "1.2.0";
 
-        private static bool _isEnabled = false;
-        private static bool _showFailEffect = true;
-        private static bool _repeatFailEffect = false;
-        private static int _failEffectDuration = 5;
-        private static int _energyReset = 50;
-        private static string _counterPosition = "0,1.2,2.5";
+        private static bool _isEnabled = DefaultSettings.IsEnabled;
+        private static bool _showFailEffect = DefaultSettings.ShowFailEffect;
+        private static bool _repeatFailEffect = DefaultSettings.RepeatFailEffect;
+        private static bool _dynamicSettings = DefaultSettings.DynamicSettings;
+        private static float _counterTextSize = DefaultSettings.CounterTextSize;
+        private static int _failEffectDuration = DefaultSettings.FailEffectDuration;
+        private static int _energyReset = DefaultSettings.EnergyResetAmount;
+        private static string _counterPosition = DefaultSettings.CounterTextPosition.AsString();
         public static int _numFails = 0;
+        public static BS_Utils.Utilities.Config config;
 
         private const string KeyBailOutMode = "BailOutModeEnabled";
         private const string KeyShowFailEffect = "ShowFailEffect";
@@ -35,6 +59,8 @@ namespace BailOutMode
         private const string KeyFailEffectDuration = "FailEffectDuration";
         private const string KeyEnergyResetAmount = "EnergyResetAmount";
         private const string KeyCounterTextPosition = "FailCounterPosition";
+        private const string KeyCounterTextSize = "FailCounterTextSize";
+        private const string KeyDynamicSettings = "DynamicSettings";
         public const int nrgResetMin = 30;
         public const int nrgResetMax = 100;
         bool bsUtilsExists;
@@ -69,7 +95,10 @@ namespace BailOutMode
                 Logger.Warning($"Missing dependency: Beat Saber CustomUI, settings will not be available in game.");
                 //return;
             }
-
+            if(config == null)
+            {
+                config = new BS_Utils.Utilities.Config("BailOutMode");
+            }
             CheckForUserDataFolder();
             
             
@@ -164,13 +193,11 @@ namespace BailOutMode
         {
             get
             {
-                if (BS_Utils.Gameplay.Gamemode.GameMode == "Campaign")
-                    return false;
                 return _isEnabled;
             }
             set
             {
-                ModPrefs.SetBool(Plugin.PluginName, KeyBailOutMode, value);
+                config.SetBool(Plugin.PluginName, KeyBailOutMode, value);
                 _isEnabled = value;
             }
 
@@ -184,7 +211,7 @@ namespace BailOutMode
             }
             set
             {
-                ModPrefs.SetBool(Plugin.PluginName, KeyShowFailEffect, value);
+                config.SetBool(Plugin.PluginName, KeyShowFailEffect, value);
                 _showFailEffect = value;
             }
 
@@ -198,7 +225,7 @@ namespace BailOutMode
             }
             set
             {
-                ModPrefs.SetBool(Plugin.PluginName, KeyRepeatFailEffect, value);
+                config.SetBool(Plugin.PluginName, KeyRepeatFailEffect, value);
                 _repeatFailEffect = value;
             }
 
@@ -212,7 +239,7 @@ namespace BailOutMode
             }
             set
             {
-                ModPrefs.SetInt(Plugin.PluginName, KeyFailEffectDuration, value);
+                config.SetInt(Plugin.PluginName, KeyFailEffectDuration, value);
                 _failEffectDuration = value;
             }
         }
@@ -230,15 +257,53 @@ namespace BailOutMode
                         _energyReset = nrgResetMax;
 
                 }
-                ModPrefs.SetInt(Plugin.PluginName, KeyEnergyResetAmount, _energyReset);
+                config.SetInt(Plugin.PluginName, KeyEnergyResetAmount, _energyReset);
             }
 
         }
 
-        public static string CounterPosition
+        public static string CounterTextPosition
         {
-            get { return _counterPosition; }
+            get
+            {
+                if(DynamicSettings)
+                {
+                    _counterPosition = config.GetString(PluginName, KeyCounterTextPosition, DefaultSettings.CounterTextPosition.AsString());
+                }
+                return _counterPosition;
+            }
             set { _counterPosition = value; }
+        }
+
+        public static float CounterTextSize
+        {
+            get
+            {
+                if (DynamicSettings)
+                {
+                    float val = config.GetFloat(Plugin.PluginName, Plugin.KeyCounterTextSize, DefaultSettings.CounterTextSize);
+                    if (val <= 0)
+                        val = DefaultSettings.CounterTextSize;
+                    _counterTextSize = val;
+                }
+                return _counterTextSize;
+            }
+            set
+            {
+                if(value > 0)
+                    _counterTextSize = value;
+                else
+                {
+                    Logger.Error($"Invalid {KeyCounterTextSize}: {value}, must be > 0.");
+                    _counterTextSize = DefaultSettings.CounterTextSize;
+                }
+            }
+        }
+
+        public static bool DynamicSettings
+        {
+            get { return _dynamicSettings; }
+            set { _dynamicSettings = value; }
         }
 
 
@@ -259,55 +324,71 @@ namespace BailOutMode
 
         private void CheckForUserDataFolder()
         {
+            /*
             string userDataPath = Environment.CurrentDirectory + "/UserData";
             if (!Directory.Exists(userDataPath))
             {
                 Directory.CreateDirectory(userDataPath);
             }
-            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyBailOutMode, "")))
+            */
+            if ("".Equals(config.GetString(Plugin.PluginName, Plugin.KeyBailOutMode, "")))
             {
-                ModPrefs.SetBool(Plugin.PluginName, Plugin.KeyBailOutMode, IsEnabled);
+                config.SetBool(Plugin.PluginName, Plugin.KeyBailOutMode, DefaultSettings.IsEnabled);
             }
             else
-                IsEnabled = ModPrefs.GetBool(Plugin.PluginName, Plugin.KeyBailOutMode, IsEnabled);
-
-            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyShowFailEffect, "")))
+                IsEnabled = config.GetBool(Plugin.PluginName, Plugin.KeyBailOutMode, DefaultSettings.IsEnabled);
+            
+            if ("".Equals(config.GetString(Plugin.PluginName, Plugin.KeyShowFailEffect, "")))
             {
-                ModPrefs.SetBool(Plugin.PluginName, Plugin.KeyShowFailEffect, ShowFailEffect);
+                config.SetBool(Plugin.PluginName, Plugin.KeyShowFailEffect, DefaultSettings.ShowFailEffect);
             }
             else
-                ShowFailEffect = ModPrefs.GetBool(Plugin.PluginName, Plugin.KeyShowFailEffect, ShowFailEffect);
+                ShowFailEffect = config.GetBool(Plugin.PluginName, Plugin.KeyShowFailEffect, DefaultSettings.ShowFailEffect);
 
-            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyRepeatFailEffect, "")))
+            if ("".Equals(config.GetString(Plugin.PluginName, Plugin.KeyRepeatFailEffect, "")))
             {
-                ModPrefs.SetBool(Plugin.PluginName, Plugin.KeyRepeatFailEffect, RepeatFailEffect);
+                config.SetBool(Plugin.PluginName, Plugin.KeyRepeatFailEffect, DefaultSettings.RepeatFailEffect);
             }
             else
-                RepeatFailEffect = ModPrefs.GetBool(Plugin.PluginName, Plugin.KeyRepeatFailEffect, RepeatFailEffect);
+                RepeatFailEffect = config.GetBool(Plugin.PluginName, Plugin.KeyRepeatFailEffect, DefaultSettings.RepeatFailEffect);
 
-            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyFailEffectDuration, "")))
+            if ("".Equals(config.GetString(Plugin.PluginName, Plugin.KeyFailEffectDuration, "")))
             {
-                ModPrefs.SetInt(Plugin.PluginName, Plugin.KeyFailEffectDuration, FailEffectDuration);
+                config.SetInt(Plugin.PluginName, Plugin.KeyFailEffectDuration, DefaultSettings.FailEffectDuration);
             }
             else
-                FailEffectDuration = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyFailEffectDuration, FailEffectDuration);
+                FailEffectDuration = config.GetInt(Plugin.PluginName, Plugin.KeyFailEffectDuration, DefaultSettings.FailEffectDuration);
 
-            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyEnergyResetAmount, "")))
+            if ("".Equals(config.GetString(Plugin.PluginName, Plugin.KeyEnergyResetAmount, "")))
             {
-                ModPrefs.SetInt(Plugin.PluginName, Plugin.KeyEnergyResetAmount, EnergyResetAmount);
+                config.SetInt(Plugin.PluginName, Plugin.KeyEnergyResetAmount, DefaultSettings.EnergyResetAmount);
             }
             else
-                EnergyResetAmount = ModPrefs.GetInt(Plugin.PluginName, Plugin.KeyEnergyResetAmount, EnergyResetAmount);
+                EnergyResetAmount = config.GetInt(Plugin.PluginName, Plugin.KeyEnergyResetAmount, DefaultSettings.EnergyResetAmount);
 
-            if ("".Equals(ModPrefs.GetString(Plugin.PluginName, Plugin.KeyCounterTextPosition, "")))
+            if ("".Equals(config.GetString(Plugin.PluginName, Plugin.KeyCounterTextPosition, "")))
             {
-                ModPrefs.SetString(Plugin.PluginName, Plugin.KeyCounterTextPosition, CounterPosition);
+                config.SetString(Plugin.PluginName, Plugin.KeyCounterTextPosition, DefaultSettings.CounterTextPosition.AsString());
             }
             else
-                CounterPosition = ModPrefs.GetString(Plugin.PluginName, Plugin.KeyCounterTextPosition, CounterPosition);
+                CounterTextPosition = config.GetString(Plugin.PluginName, Plugin.KeyCounterTextPosition, DefaultSettings.CounterTextPosition.AsString());
 
-            Logger.Debug("Settings:\n  IsEnabled={0}\n  ShowFailEffect={1}\n  FailEffectDuration={2}\n  EnergyResetAmount={3}\n  CounterPosition={4}",
-                IsEnabled, ShowFailEffect, FailEffectDuration, EnergyResetAmount, CounterPosition);
+            if ("".Equals(config.GetString(Plugin.PluginName, Plugin.KeyCounterTextSize, "")))
+            {
+                config.SetFloat(Plugin.PluginName, Plugin.KeyCounterTextSize, DefaultSettings.CounterTextSize);
+            }
+            else
+                CounterTextSize = config.GetFloat(Plugin.PluginName, Plugin.KeyCounterTextSize, DefaultSettings.CounterTextSize);
+
+            if ("".Equals(config.GetString(Plugin.PluginName, Plugin.KeyDynamicSettings, "")))
+            {
+                config.SetBool(Plugin.PluginName, Plugin.KeyDynamicSettings, DefaultSettings.DynamicSettings);
+            }
+            else
+                DynamicSettings = config.GetBool(Plugin.PluginName, Plugin.KeyDynamicSettings, DefaultSettings.DynamicSettings);
+
+            Logger.Debug("Settings:\n  IsEnabled={0}\n  ShowFailEffect={1}\n  FailEffectDuration={2}\n  EnergyResetAmount={3}\n  CounterPosition={4}\n CounterTextSize={5}\n DynamicSettings={6}",
+                IsEnabled, ShowFailEffect, FailEffectDuration, EnergyResetAmount, CounterTextPosition, CounterTextSize, DynamicSettings);
         }
 
         
