@@ -19,7 +19,10 @@ namespace BailOutMode.Harmony_Patches
         static bool Prefix(GameEnergyCounter __instance, ref float value)
         {
             //Logger.Trace("In GameEnergyCounter.AddEnergy()");
-            if (Plugin.IsEnabled && value < 0f)
+            bool enabled = false;
+            if (BailOutController.Instance != null)
+                enabled = BailOutController.Instance.IsEnabled;
+            if (enabled && value < 0f)
             {
                 //Logger.Trace("Negative energy change detected: {0}", value);
                 if (__instance.energy + value <= 0)

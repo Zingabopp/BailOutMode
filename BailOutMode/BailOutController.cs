@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,14 @@ namespace BailOutMode
         public bool isHiding = false;
         public static int numFails = 0;
         public static float failTextFontSize = 15f;
+
+        public bool IsEnabled
+        {
+            get
+            {
+                return Plugin.IsEnabled && (!isCampaign);
+            }
+        }
 
         public TextMeshProUGUI FailText
         {
@@ -118,9 +127,29 @@ namespace BailOutMode
         public void Start()
         {
             //Logger.Trace("BailOutController Start()");
+            StartCoroutine(Initialize());
             LevelFailedEffect = GameObject.FindObjectsOfType<LevelFailedTextEffect>().FirstOrDefault();
-            if ((GameManager != null) && (EnergyCounter != null) && Plugin.IsEnabled)
+            
+        }
+
+        private bool isCampaign = false;
+
+        private IEnumerator Initialize()
+        {
+            yield return new WaitForSeconds(0.5f);
+            //Logger.Trace("Checking for Campaign mode");
+            if (GameObject.FindObjectsOfType<MissionGameplaySceneSetup>().Count() > 0)
             {
+                Logger.Info("Campaign mode detected, BailOutMode unavailable.");
+                isCampaign = true;
+            }
+            else
+            {
+                isCampaign = false;
+            }
+            if ((GameManager != null) && (EnergyCounter != null) && IsEnabled)
+            {
+                Logger.Info("BailOutMode enabled");
                 //Logger.Trace("Removing HandleGameEnergyDidReach0");
                 EnergyCounter.gameEnergyDidReach0Event -= GameManager.HandleGameEnergyDidReach0;
             }
