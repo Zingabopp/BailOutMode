@@ -16,12 +16,11 @@ namespace BailOutMode
         private StandardLevelGameplayManager _gameManager;
         private GameEnergyCounter _energyCounter;
         private TextMeshProUGUI _failText;
-        private PlayerSpecificSettings _playerSettings;
+        private static PlayerSpecificSettings _playerSettings;
         #endregion
         #region "Fields"
         public bool isHiding = false;
         public static int numFails = 0;
-        public static float failTextFontSize = 15f;
 
         public bool IsEnabled
         {
@@ -72,7 +71,7 @@ namespace BailOutMode
                 return _energyCounter;
             }
         }
-        private PlayerSpecificSettings PlayerSettings
+        private static PlayerSpecificSettings PlayerSettings
         {
             get
             {
@@ -85,12 +84,15 @@ namespace BailOutMode
                 return _playerSettings;
             }
         }
-        private float PlayerHeight
+        private static float PlayerHeight
         {
             get
             {
                 if (PlayerSettings != null)
+                {
+                    //Logger.Debug($"Using PlayerHeight {PlayerSettings.playerHeight}");
                     return PlayerSettings.playerHeight;
+                }
                 else
                 {
                     Logger.Warning("Unable to find PlayerSettings, using 1.8 for player height");
@@ -164,7 +166,7 @@ namespace BailOutMode
         {
             //Logger.Trace("BailOutController ShowLevelFailed()");
             BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
-            FailText.text = $"Bailed Out {Plugin._numFails} time{(Plugin._numFails != 1 ? "s" : "")}";
+            UpdateFailText($"Bailed Out {Plugin._numFails} time{(Plugin._numFails != 1 ? "s" : "")}");
             if (!isHiding && Plugin.ShowFailEffect)
             {
                 try
@@ -205,7 +207,7 @@ namespace BailOutMode
 
         public static void FacePosition(Transform obj, Vector3 targetPos)
         {
-            var rotAngle = Quaternion.LookRotation(obj.position - targetPos);
+            var rotAngle = Quaternion.LookRotation(StringToVector3(Plugin.CounterTextPosition) - targetPos);
             obj.rotation = rotAngle;
         }
 
@@ -214,7 +216,7 @@ namespace BailOutMode
             Canvas _canvas = new GameObject("BailOutFailText").AddComponent<Canvas>();
             _canvas.gameObject.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
             _canvas.renderMode = RenderMode.WorldSpace;
-            (_canvas.transform as RectTransform).sizeDelta = new Vector2(200f, 50f);
+            (_canvas.transform as RectTransform).sizeDelta = new Vector2(0f, 0f);
             return CreateText(_canvas, text, new Vector2(0f, 0f), (_canvas.transform as RectTransform).sizeDelta);
         }
 
@@ -235,19 +237,37 @@ namespace BailOutMode
                 return null;
             }
             textMesh.font = font;
+            textMesh.fontSize = Plugin.CounterTextSize;
             textMesh.rectTransform.SetParent(parent.transform as RectTransform, false);
             textMesh.text = text;
             textMesh.color = Color.white;
-
-            textMesh.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-            textMesh.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            textMesh.rectTransform.anchorMin = new Vector2(0f, 0f);
+            textMesh.rectTransform.anchorMax = new Vector2(0f, 0f);
             textMesh.rectTransform.sizeDelta = sizeDelta;
             textMesh.rectTransform.anchoredPosition = anchoredPosition;
             textMesh.alignment = TextAlignmentOptions.Left;
-            gameObj.transform.position = StringToVector3(Plugin.CounterPosition);
             FacePosition(textMesh.gameObject.transform, new Vector3(0, PlayerHeight, 0));
             gameObj.SetActive(true);
             return textMesh;
+        }
+
+        public static void CenterTextMesh(TextMeshProUGUI text)
+        {
+            text.ForceMeshUpdate();
+            var pos = StringToVector3(Plugin.CounterTextPosition);
+            pos.x = pos.x - (text.renderedWidth * text.gameObject.transform.localScale.x) / 2;
+            pos.y = pos.y + (text.renderedHeight * text.gameObject.transform.localScale.y);
+            FacePosition(text.gameObject.transform, new Vector3(0, PlayerHeight, 0));
+            text.transform.position = pos;
+            
+        }
+
+        public void UpdateFailText(string text)
+        {
+            FailText.text = text;
+            if (Plugin.DynamicSettings)
+                FailText.fontSize = Plugin.CounterTextSize;
+            CenterTextMesh(FailText);
         }
 
         public static Vector3 StringToVector3(string vStr)
@@ -265,7 +285,7 @@ namespace BailOutMode
             catch (Exception ex)
             {
                 Logger.Exception($"Cannot convert value of {vStr} to a Vector. Needs to be in the format #,#,#", ex);
-                return new Vector3(0f, .3f, 2.5f);
+                return new Vector3(DefaultSettings.CounterTextPosition.x, DefaultSettings.CounterTextPosition.y, DefaultSettings.CounterTextPosition.z);
             }
         }
     }

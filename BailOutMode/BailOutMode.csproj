@@ -52,6 +52,9 @@
     <Reference Include="IllusionPlugin">
       <HintPath>References\Managed\IllusionPlugin.dll</HintPath>
     </Reference>
+    <Reference Include="INIFileParser">
+      <HintPath>References\Managed\INIFileParser.dll</HintPath>
+    </Reference>
     <Reference Include="IPA.Injector">
       <HintPath>References\Managed\IPA.Injector.dll</HintPath>
     </Reference>
