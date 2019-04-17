@@ -40,7 +40,7 @@ namespace BailOutMode
     {
         public static string PluginName = "BailOutMode";
         public string Name => PluginName;
-        public string Version => "1.2.0";
+        public string Version => "1.3.0";
 
         private static bool _isEnabled = DefaultSettings.IsEnabled;
         private static bool _showFailEffect = DefaultSettings.ShowFailEffect;
