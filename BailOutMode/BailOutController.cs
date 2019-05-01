@@ -166,12 +166,12 @@ namespace BailOutMode
         {
             //Logger.Trace("BailOutController ShowLevelFailed()");
             BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
-            UpdateFailText($"Bailed Out {Plugin._numFails} time{(Plugin._numFails != 1 ? "s" : "")}");
+            UpdateFailText($"Bailed Out {numFails} time{(numFails != 1 ? "s" : "")}");
             if (!isHiding && Plugin.ShowFailEffect)
             {
                 try
                 {
-                    if (!Plugin.RepeatFailEffect && Plugin._numFails > 1)
+                    if (!Plugin.RepeatFailEffect && numFails > 1)
                         return; // Don't want to repeatedly show fail effect, stop here.
 
                     //Logger.Debug("Showing fail effect");

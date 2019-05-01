@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BailOutMode</RootNamespace>
     <AssemblyName>BailOutMode</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -98,6 +98,7 @@
   <ItemGroup>
     <Compile Include="Harmony_Patches\GameEnergyCounterAddEnergy.cs" />
     <Compile Include="BailOutController.cs" />
+    <Compile Include="Harmony_Patches\HandleSongDidFinish.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

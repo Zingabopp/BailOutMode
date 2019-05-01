@@ -50,7 +50,6 @@ namespace BailOutMode
         private static int _failEffectDuration = DefaultSettings.FailEffectDuration;
         private static int _energyReset = DefaultSettings.EnergyResetAmount;
         private static string _counterPosition = DefaultSettings.CounterTextPosition.AsString();
-        public static int _numFails = 0;
         public static BS_Utils.Utilities.Config config;
 
         private const string KeyBailOutMode = "BailOutModeEnabled";
@@ -65,6 +64,7 @@ namespace BailOutMode
         public const int nrgResetMax = 100;
         bool bsUtilsExists;
         bool customUIExists;
+        
         private GameScenesManager _scenesManager;
         public GameScenesManager _gameScenesManager
         {
@@ -100,8 +100,7 @@ namespace BailOutMode
                 config = new BS_Utils.Utilities.Config("BailOutMode");
             }
             CheckForUserDataFolder();
-            
-            
+
             try
             {
                 var harmony = HarmonyInstance.Create("com.github.zingabopp.bailoutmode");
@@ -160,7 +159,7 @@ namespace BailOutMode
             {
                 //Code to execute when entering actual gameplay
                 _gameScenesManager.transitionDidFinishEvent += OnSceneTransitionFinish;
-                _numFails = 0;
+                BailOutController.numFails = 0;
             }
         }
 
