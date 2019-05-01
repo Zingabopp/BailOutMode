@@ -28,7 +28,14 @@ namespace BailOutMode.Harmony_Patches
                 if (__instance.energy + value <= 0)
                 {
                     //Logger.Debug("Fail detected. Current Energy: {0}, Energy Change: {1}", __instance.energy, value);
-                    BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
+                    if (BS_Utils.Gameplay.ScoreSubmission.Disabled == false
+                        ||BailOutController.numFails == 0)
+                    {
+                        Logger.Info("First fail detected, disabling score submission");
+                        if (BailOutController.numFails > 0)
+                            Logger.Error($"Fail Counter is {BailOutController.numFails}, but score submission wasn't disabled. This should not happen");
+                        BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
+                    }
                     BailOutController.numFails++;
                     //Logger.Debug($"{__instance.energy} + {value} puts us <= 0");
                     value = (Plugin.EnergyResetAmount / 100f) - __instance.energy;

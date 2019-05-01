@@ -18,14 +18,20 @@ namespace BailOutMode.Harmony_Patches
         static void Prefix(StandardLevelGameplayManager __instance, ref StandardLevelGameplayManager.GameState ____gameState, ref Signal ____levelFailedSignal)
         {
             //Logger.Trace("In StandardLevelGameplayManager.HandleSongDidFinish()");
-            bool enabled = false;
-            if (BailOutController.Instance != null)
-                enabled = BailOutController.Instance.IsEnabled;
-            if (enabled && BailOutController.numFails > 0)
+            try {
+                bool enabled = false;
+                if (BailOutController.Instance != null)
+                    enabled = BailOutController.Instance.IsEnabled;
+                if (enabled && BailOutController.numFails > 0)
+                {
+                    //Logger.Trace("Fail detected in BailOutController, setting state to failed");
+                    ____gameState = StandardLevelGameplayManager.GameState.Failed;
+                    ____levelFailedSignal.Raise();
+                }
+            }
+            catch (Exception ex)
             {
-                //Logger.Trace("Fail detected in BailOutController, setting state to failed");
-                ____gameState = StandardLevelGameplayManager.GameState.Failed;
-                ____levelFailedSignal.Raise();
+                Logger.Exception("Error in StandardLevelGameplayManagerHandleSongDidFinish", ex);
             }
 
             return;

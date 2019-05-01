@@ -165,7 +165,7 @@ namespace BailOutMode
         public void ShowLevelFailed()
         {
             //Logger.Trace("BailOutController ShowLevelFailed()");
-            BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
+            //BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName); Don't need this here
             UpdateFailText($"Bailed Out {numFails} time{(numFails != 1 ? "s" : "")}");
             if (!isHiding && Plugin.ShowFailEffect)
             {

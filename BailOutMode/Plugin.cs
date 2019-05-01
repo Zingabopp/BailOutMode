@@ -78,10 +78,15 @@ namespace BailOutMode
             }
         }
 
-        public void OnApplicationStart()
+        public void Init(IPA.Logging.Logger logger)
         {
             Logger.LogLevel = LogLevel.Info;
+            IPA.Logging.StandardLogger.PrintFilter = IPA.Logging.Logger.LogLevel.All;
+            Logger.ipaLogger = logger;
+        }
 
+        public void OnApplicationStart()
+        {
             customUIExists = IPA.Loader.PluginManager.AllPlugins.FirstOrDefault(c => c.Metadata.Name == "Custom UI") != null;
             bsUtilsExists = IPA.Loader.PluginManager.AllPlugins.FirstOrDefault(c => c.Metadata.Name == "BS_Utils") != null;
 
@@ -385,7 +390,7 @@ namespace BailOutMode
             else
                 DynamicSettings = config.GetBool(Plugin.PluginName, Plugin.KeyDynamicSettings, DefaultSettings.DynamicSettings);
 
-            Logger.Debug("Settings:\n  IsEnabled={0}\n  ShowFailEffect={1}\n  FailEffectDuration={2}\n  EnergyResetAmount={3}\n  CounterPosition={4}\n CounterTextSize={5}\n DynamicSettings={6}",
+            Logger.Debug("Settings:\n  IsEnabled={0}\n  ShowFailEffect={1}\n  FailEffectDuration={2}\n  EnergyResetAmount={3}\n  CounterPosition={4}\n  CounterTextSize={5}\n  DynamicSettings={6}",
                 IsEnabled, ShowFailEffect, FailEffectDuration, EnergyResetAmount, CounterTextPosition, CounterTextSize, DynamicSettings);
         }
 
