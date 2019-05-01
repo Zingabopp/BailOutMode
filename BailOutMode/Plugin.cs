@@ -82,7 +82,7 @@ namespace BailOutMode
         {
             Logger.LogLevel = LogLevel.Info;
 
-            customUIExists = IPA.Loader.PluginManager.AllPlugins.FirstOrDefault(c => c.Metadata.Name == "BeatSaberCustomUI") != null;
+            customUIExists = IPA.Loader.PluginManager.AllPlugins.FirstOrDefault(c => c.Metadata.Name == "Custom UI") != null;
             bsUtilsExists = IPA.Loader.PluginManager.AllPlugins.FirstOrDefault(c => c.Metadata.Name == "BS_Utils") != null;
 
             if (!bsUtilsExists)
@@ -93,7 +93,6 @@ namespace BailOutMode
             if (!customUIExists)
             {
                 Logger.Warning($"Missing dependency: Beat Saber CustomUI, settings will not be available in game.");
-                //return;
             }
             if(config == null)
             {
