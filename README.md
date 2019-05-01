@@ -7,9 +7,10 @@
 <h2>Setup</h2>
 <u1>
 <li>Launch the game, you can change the settings for BailOutMode in the game settings (BailOutMode defaults to off)</li>
-<li>You can change the position of the fail counter text in UserData\modprefs.ini with the FailCounterPosition setting. The format is "#,#,#" (i.e. FailCounterPosition=0,.3,2.5). It represents the x,y,z of the text from the middle of the platform (where the feet are).</li>
+<li>You can change the position of the fail counter text in UserData\BailOutMode.ini with the FailCounterPosition setting. The format is "#,#,#" (i.e. FailCounterPosition=0,.3,2.5). It represents the x,y,z of the text from the middle of the platform (where the feet are).</li>
 <li>If enabled, the Level Failed effect will show whenever your energy reaches 0. It will disappear after the set duration. If duration is set to 0, it will stay up until the end of the song.</li>
 <li>If RepeatFailEffect is enabled, the Level Failed effect will be displayed each time your energy reaches 0. Disable to only show the fail effect on the first fail.</li>
+<li>To conveniently find a suitable location and size for the Fail Counter Text, you can enable DynamicSettings. When enabled, BailOutMode will reread the FailCounterPosition and FailCounterTextSize settings from the ini file every time the text is updated during a song. This may have a slight performance impact, so it's recommended to disable after you are satisfied with the settings.</li>
 </u1>
 <h2>Dependencies</h2>
 <u1>
