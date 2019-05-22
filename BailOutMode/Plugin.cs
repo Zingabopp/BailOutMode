@@ -39,8 +39,6 @@ namespace BailOutMode
     public class Plugin : IBeatSaberPlugin
     {
         public static string PluginName = "BailOutMode";
-        public string Name => PluginName;
-        public string Version => "1.3.1";
 
         private static bool _isEnabled = DefaultSettings.IsEnabled;
         private static bool _showFailEffect = DefaultSettings.ShowFailEffect;
