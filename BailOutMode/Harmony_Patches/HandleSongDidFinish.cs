@@ -15,26 +15,29 @@ namespace BailOutMode.Harmony_Patches
     new Type[] { })]
     class StandardLevelGameplayManagerHandleSongDidFinish
     {
-        static void Prefix(StandardLevelGameplayManager __instance, ref StandardLevelGameplayManager.GameState ____gameState, ref Signal ____levelFailedSignal)
+        static bool Prefix(StandardLevelGameplayManager __instance, ref StandardLevelGameplayManager.GameState ____gameState)
         {
             //Logger.Trace("In StandardLevelGameplayManager.HandleSongDidFinish()");
-            try {
+            try
+            {
                 bool enabled = false;
-                if (BailOutController.Instance != null)
-                    enabled = BailOutController.Instance.IsEnabled;
-                if (enabled && BailOutController.numFails > 0)
+                if (BailOutController.instance == null)
+                    return true;
+                enabled = BailOutController.instance.IsEnabled;
+                if (enabled && BailOutController.instance.numFails > 0)
                 {
-                    //Logger.Trace("Fail detected in BailOutController, setting state to failed");
-                    ____gameState = StandardLevelGameplayManager.GameState.Failed;
-                    ____levelFailedSignal.Raise();
+                    Logger.log.Debug("Fail detected in BailOutController, setting state to failed");
+                    __instance.HandleGameEnergyDidReach0();
+                    return false;
                 }
             }
             catch (Exception ex)
             {
-                Logger.Exception("Error in StandardLevelGameplayManagerHandleSongDidFinish", ex);
+                Logger.log.Error($"Error in StandardLevelGameplayManagerHandleSongDidFinish: {ex.Message}");
+                Logger.log.Debug(ex);
             }
 
-            return;
+            return true;
         }
     }
 }

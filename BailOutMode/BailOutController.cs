@@ -11,7 +11,7 @@ namespace BailOutMode
     class BailOutController : MonoBehaviour
     {
         #region "Fields with get/setters"
-        private static BailOutController _instance;
+        public static BailOutController instance { get; private set; }
         private LevelFailedTextEffect _levelFailedEffect;
         private StandardLevelGameplayManager _gameManager;
         private GameEnergyCounter _energyCounter;
@@ -20,13 +20,13 @@ namespace BailOutMode
         #endregion
         #region "Fields"
         public bool isHiding = false;
-        public static int numFails = 0;
+        public int numFails = 0;
 
         public bool IsEnabled
         {
             get
             {
-                return Plugin.IsEnabled && (!isCampaign);
+                return Config.instance.IsEnabled && (!isCampaign);
             }
         }
 
@@ -79,7 +79,7 @@ namespace BailOutMode
                 {
                     _playerSettings = BS_Utils.Plugin.LevelData?.GameplayCoreSceneSetupData?.playerSpecificSettings;
                     if (_playerSettings == null)
-                        Logger.Warning($"Unable to find PlayerSettings");
+                        Logger.log.Warn($"Unable to find PlayerSettings");
                 }
                 return _playerSettings;
             }
@@ -95,26 +95,15 @@ namespace BailOutMode
                 }
                 else
                 {
-                    Logger.Warning("Unable to find PlayerSettings, using 1.8 for player height");
+                    Logger.log.Warn("Unable to find PlayerSettings, using 1.8 for player height");
                     return 1.8f;
                 }
             }
         }
-        public static BailOutController Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    Logger.Debug("BailOutController instance is null, creating new one");
-                    _instance = new GameObject("BailOutController").AddComponent<BailOutController>();
-                }
-                return _instance;
-            }
-        }
+
         public static bool InstanceExists
         {
-            get { return _instance != null; }
+            get { return instance != null; }
         }
 
         #endregion
@@ -122,7 +111,7 @@ namespace BailOutMode
         public void Awake()
         {
             //Logger.Trace("BailOutController Awake()");
-            _instance = this;
+            instance = this;
             isHiding = false;
         }
 
@@ -142,7 +131,7 @@ namespace BailOutMode
             //Logger.Trace("Checking for Campaign mode");
             if (GameObject.FindObjectsOfType<MissionGameplaySceneSetup>().Count() > 0)
             {
-                Logger.Info("Campaign mode detected, BailOutMode unavailable.");
+                Logger.log.Info("Campaign mode detected, BailOutMode unavailable.");
                 isCampaign = true;
             }
             else
@@ -151,7 +140,7 @@ namespace BailOutMode
             }
             if ((GameManager != null) && (EnergyCounter != null) && IsEnabled)
             {
-                Logger.Info("BailOutMode enabled");
+                Logger.log.Info("BailOutMode enabled");
                 //Logger.Trace("Removing HandleGameEnergyDidReach0");
                 EnergyCounter.gameEnergyDidReach0Event -= GameManager.HandleGameEnergyDidReach0;
             }
@@ -159,7 +148,8 @@ namespace BailOutMode
 
         private void OnDestroy()
         {
-            Logger.Debug("Destroying BailOutController");
+            Logger.log.Debug("Destroying BailOutController");
+            instance = null;
         }
 
         public void ShowLevelFailed()
@@ -167,47 +157,48 @@ namespace BailOutMode
             //Logger.Trace("BailOutController ShowLevelFailed()");
             //BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName); Don't need this here
             UpdateFailText($"Bailed Out {numFails} time{(numFails != 1 ? "s" : "")}");
-            if (!isHiding && Plugin.ShowFailEffect)
+            if (!isHiding && Config.instance.ShowFailEffect)
             {
                 try
                 {
-                    if (!Plugin.RepeatFailEffect && numFails > 1)
+                    if (!Config.instance.RepeatFailEffect && numFails > 1)
                         return; // Don't want to repeatedly show fail effect, stop here.
 
                     //Logger.Debug("Showing fail effect");
                     LevelFailedEffect.ShowEffect();
-                    if (Plugin.FailEffectDuration > 0)
+                    if (Config.instance.FailEffectDuration > 0)
                         StartCoroutine(hideLevelFailed());
                     else
                         isHiding = true; // Fail text never hides, so don't try to keep showing it
                 }
                 catch (Exception ex)
                 {
-                    Logger.Exception("Exception trying to show the fail Effect", ex);
+                    Logger.log.Error($"Exception trying to show the fail Effect: {ex.Message}");
+                    Logger.log.Debug(ex);
                 }
             }
         }
-
+        private WaitForSeconds failDurationWait = new WaitForSeconds(Config.instance.FailEffectDuration);
         public IEnumerator<WaitForSeconds> hideLevelFailed()
         {
-            Logger.Trace("BailOutController hideLevelFailed() CoRoutine");
+            Logger.log.Trace("BailOutController hideLevelFailed() CoRoutine");
             if (!isHiding)
             {
-                Logger.Trace($"BailOutController, will hide LevelFailedEffect after {Plugin.FailEffectDuration}s");
+                Logger.log.Trace($"BailOutController, will hide LevelFailedEffect after {Config.instance.FailEffectDuration}s");
                 isHiding = true;
-                yield return new WaitForSeconds(Plugin.FailEffectDuration);
-                Logger.Trace($"BailOutController, hiding LevelFailedEffect");
+                yield return failDurationWait;
+                Logger.log.Trace($"BailOutController, hiding LevelFailedEffect");
                 LevelFailedEffect.gameObject.SetActive(false);
                 isHiding = false;
             }
             else
-                Logger.Trace("BailOutController, skipping hideLevel because isHiding is true");
+                Logger.log.Trace("BailOutController, skipping hideLevel because isHiding is true");
             yield break;
         }
 
         public static void FacePosition(Transform obj, Vector3 targetPos)
         {
-            var rotAngle = Quaternion.LookRotation(StringToVector3(Plugin.CounterTextPosition) - targetPos);
+            var rotAngle = Quaternion.LookRotation(StringToVector3(Config.instance.CounterTextPosition) - targetPos);
             obj.rotation = rotAngle;
         }
 
@@ -233,11 +224,11 @@ namespace BailOutMode
             var font = Instantiate(Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(t => t.name == "Teko-Medium SDF No Glow"));
             if (font == null)
             {
-                Logger.Error("Could not locate font asset, unable to display text");
+                Logger.log.Error("Could not locate font asset, unable to display text");
                 return null;
             }
             textMesh.font = font;
-            textMesh.fontSize = Plugin.CounterTextSize;
+            textMesh.fontSize = Config.instance.CounterTextSize;
             textMesh.rectTransform.SetParent(parent.transform as RectTransform, false);
             textMesh.text = text;
             textMesh.color = Color.white;
@@ -254,7 +245,7 @@ namespace BailOutMode
         public static void CenterTextMesh(TextMeshProUGUI text)
         {
             text.ForceMeshUpdate();
-            var pos = StringToVector3(Plugin.CounterTextPosition);
+            var pos = StringToVector3(Config.instance.CounterTextPosition);
             pos.x = pos.x - (text.renderedWidth * text.gameObject.transform.localScale.x) / 2;
             pos.y = pos.y + (text.renderedHeight * text.gameObject.transform.localScale.y);
             FacePosition(text.gameObject.transform, new Vector3(0, PlayerHeight, 0));
@@ -265,8 +256,8 @@ namespace BailOutMode
         public void UpdateFailText(string text)
         {
             FailText.text = text;
-            if (Plugin.DynamicSettings)
-                FailText.fontSize = Plugin.CounterTextSize;
+            if (Config.instance.DynamicSettings)
+                FailText.fontSize = Config.instance.CounterTextSize;
             CenterTextMesh(FailText);
         }
 
@@ -284,7 +275,8 @@ namespace BailOutMode
             }
             catch (Exception ex)
             {
-                Logger.Exception($"Cannot convert value of {vStr} to a Vector. Needs to be in the format #,#,#", ex);
+                Logger.log.Error($"Cannot convert value of {vStr} to a Vector. Needs to be in the format #,#,#: {ex.Message}");
+                Logger.log.Debug(ex);
                 return new Vector3(DefaultSettings.CounterTextPosition.x, DefaultSettings.CounterTextPosition.y, DefaultSettings.CounterTextPosition.z);
             }
         }

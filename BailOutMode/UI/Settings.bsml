@@ -1,0 +1,9 @@
+﻿<settings-container>
+  <bool-setting text='Enabled' value='IsEnabled' hover-hint='Enable BailOutMode'/>
+  <bool-setting text='Show Fail Effect' value='ShowFailEffect' hover-hint='Show the Level Failed effect when bailed out'/>
+  <bool-setting text='Repeat Fail Effect' value='RepeatFailEffect' hover-hint='Show the Level Failed effect every time a bail out happens'/>
+  <increment-setting text='Fail Effect Duration' value='FailEffectDuration' hover-hint='How long the Level Failed effect is displayed' integer-only='true' increment='1' min='1' max='15'/>
+  <slider-setting text='Energy Reset Amount' value='EnergyResetAmount' hover-hint='How much energy is gained back after a bail out' min='30' max='100' integer-only='true'/>
+  <string-setting text='Counter Text Position' value='CounterTextPosition' hover-hint='Where the Bail Out counter text is shown'/>
+  <increment-setting text='Counter Text Size' value='CounterTextSize' hover-hint='How large the text of the Bail Out counter is' min='1'/>
+</settings-container>

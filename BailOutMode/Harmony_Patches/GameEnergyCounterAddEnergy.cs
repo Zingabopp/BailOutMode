@@ -20,8 +20,9 @@ namespace BailOutMode.Harmony_Patches
         {
             //Logger.Trace("In GameEnergyCounter.AddEnergy()");
             bool enabled = false;
-            if (BailOutController.Instance != null)
-                enabled = BailOutController.Instance.IsEnabled;
+            if (BailOutController.instance == null)
+                return true;
+            enabled = BailOutController.instance.IsEnabled;
             if (enabled && value < 0f)
             {
                 //Logger.Trace("Negative energy change detected: {0}", value);
@@ -29,18 +30,18 @@ namespace BailOutMode.Harmony_Patches
                 {
                     //Logger.Debug("Fail detected. Current Energy: {0}, Energy Change: {1}", __instance.energy, value);
                     if (BS_Utils.Gameplay.ScoreSubmission.Disabled == false
-                        ||BailOutController.numFails == 0)
+                        || BailOutController.instance.numFails == 0)
                     {
-                        Logger.Info("First fail detected, disabling score submission");
-                        if (BailOutController.numFails > 0)
-                            Logger.Error($"Fail Counter is {BailOutController.numFails}, but score submission wasn't disabled. This should not happen");
+                        Logger.log.Info("First fail detected, disabling score submission");
+                        if (BailOutController.instance.numFails > 0)
+                            Logger.log.Error($"Fail Counter is {BailOutController.instance.numFails}, but score submission wasn't disabled. This should not happen");
                         BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
                     }
-                    BailOutController.numFails++;
+                    BailOutController.instance.numFails++;
                     //Logger.Debug($"{__instance.energy} + {value} puts us <= 0");
-                    value = (Plugin.EnergyResetAmount / 100f) - __instance.energy;
+                    value = (Config.instance.EnergyResetAmount / 100f) - __instance.energy;
                     //Logger.Debug("Changing value to {0} to raise energy to {1}", value, Plugin.EnergyResetAmount);
-                    BailOutController.Instance.ShowLevelFailed();
+                    BailOutController.instance.ShowLevelFailed();
                 }
             }
             return true;
