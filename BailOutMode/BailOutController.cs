@@ -181,18 +181,26 @@ namespace BailOutMode
         private WaitForSeconds failDurationWait = new WaitForSeconds(Configuration.instance.FailEffectDuration);
         public IEnumerator<WaitForSeconds> hideLevelFailed()
         {
+#if DEBUG
             Logger.log.Trace("BailOutController hideLevelFailed() CoRoutine");
+#endif
             if (!isHiding)
             {
+#if DEBUG
                 Logger.log.Trace($"BailOutController, will hide LevelFailedEffect after {Configuration.instance.FailEffectDuration}s");
+#endif
                 isHiding = true;
                 yield return failDurationWait;
+#if DEBUG
                 Logger.log.Trace($"BailOutController, hiding LevelFailedEffect");
+#endif
                 LevelFailedEffect.gameObject.SetActive(false);
                 isHiding = false;
             }
+#if DEBUG
             else
                 Logger.log.Trace("BailOutController, skipping hideLevel because isHiding is true");
+#endif
             yield break;
         }
 

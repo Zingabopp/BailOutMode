@@ -19,13 +19,11 @@ namespace BailOutMode.Harmony_Patches
             //Logger.Trace("In StandardLevelGameplayManager.HandleSongDidFinish()");
             try
             {
-                bool enabled = false;
                 if (BailOutController.instance == null)
                     return true;
-                enabled = BailOutController.instance.IsEnabled;
-                if (enabled && BailOutController.instance.numFails > 0)
+                if (BailOutController.instance.numFails > 0)
                 {
-                    Logger.log.Debug("Fail detected in BailOutController, setting state to failed");
+                    Logger.log.Debug("Fail detected in BailOutController, forcing level failed");
                     __instance.HandleGameEnergyDidReach0();
                     return false;
                 }
