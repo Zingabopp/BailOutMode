@@ -5,13 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using Harmony;
+using HarmonyLib;
 using BS_Utils;
-using static BailOutMode.ReflectionUtil;
 
 namespace BailOutMode.Harmony_Patches
 {
-    [HarmonyPatch(typeof(StandardLevelGameplayManager), "HandleSongDidFinish",
+    [HarmonyPatch(typeof(StandardLevelGameplayManager), nameof(StandardLevelGameplayManager.HandleSongDidFinish),
     new Type[] { })]
     class StandardLevelGameplayManagerHandleSongDidFinish
     {

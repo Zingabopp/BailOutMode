@@ -1,53 +1,45 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using HarmonyLib;
+using IPA;
+using IPA.Config;
+using IPA.Config.Stores;
+using System;
 using System.Linq;
-using System.Media;
-using TMPro;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using IPA;
-using Harmony;
-using System.Reflection;
-
 
 namespace BailOutMode
 {
 
-    public class Plugin : IBeatSaberPlugin
+    [Plugin(RuntimeOptions.DynamicInit)]
+    public class Plugin
     {
         public static string PluginName = "BailOutMode";
+        private static Harmony harmony;
 
-        private GameScenesManager _scenesManager;
-        public GameScenesManager _gameScenesManager
-        {
-            get
-            {
-                if (_scenesManager == null)
-                {
-                    _scenesManager = Resources.FindObjectsOfTypeAll<GameScenesManager>().FirstOrDefault();
-                }
-                return _scenesManager;
-            }
-        }
-
+        [Init]
         public void Init(IPA.Logging.Logger logger)
         {
             Logger.log = logger;
+            harmony = new Harmony("com.github.zingabopp.bailoutmode");
         }
 
-        public void OnApplicationStart()
+        [Init]
+        public void InitWithConfig(Config conf)
         {
-            if (Config.instance.config == null)
-            {
-                Config.instance.config = new BS_Utils.Utilities.Config("BailOutMode");
-            }
-            Config.instance.CheckForUserDataFolder();
-            BS_Utils.Utilities.BSEvents.menuSceneLoadedFresh += MenuLoadedFresh;
+            Configuration.instance = conf.Generated<Configuration>();
+            Logger.log.Debug("Config loaded"); 
+            BeatSaberMarkupLanguage.Settings.BSMLSettings.instance.AddSettingsMenu(PluginName, "BailOutMode.UI.Settings.bsml", Configuration.instance);
+
+        }
+
+        [OnEnable]
+        public void OnEnable()
+        {
+            BS_Utils.Utilities.BSEvents.gameSceneActive -= BSEvents_gameSceneActive;
+            BS_Utils.Utilities.BSEvents.gameSceneActive += BSEvents_gameSceneActive;
             try
             {
-                var harmony = HarmonyInstance.Create("com.github.zingabopp.bailoutmode");
                 harmony.PatchAll(Assembly.GetExecutingAssembly());
             }
             catch (Exception ex)
@@ -55,82 +47,42 @@ namespace BailOutMode
                 Logger.log.Error($"Error applying Harmony patches: {ex.Message}");
                 Logger.log.Debug(ex.ToString());
             }
-
         }
 
-        private void OnSceneTransitionFinish(ScenesTransitionSetupDataSO arg1, Zenject.DiContainer arg2)
+        [OnDisable]
+        public void OnDisable()
         {
-            //Logger.Debug("OnSceneTransitionFinished: Creating new BailOutController");
+            BS_Utils.Utilities.BSEvents.gameSceneActive -= BSEvents_gameSceneActive;
+            if (BailOutController.instance != null)
+            {
+                GameObject.Destroy(BailOutController.instance);
+            }
+            try
+            {
+                harmony.UnpatchAll(harmony.Id);
+            }
+            catch (Exception ex)
+            {
+                Logger.log.Error($"Error removing Harmony patches: {ex.Message}");
+                Logger.log.Debug(ex.ToString());
+            }
+        }
+
+
+
+        private void BSEvents_gameSceneActive()
+        {
+            if (BailOutController.instance != null)
+            {
+                GameObject.Destroy(BailOutController.instance);
+            }
             new GameObject("BailOutController").AddComponent<BailOutController>();
-            _gameScenesManager.transitionDidFinishEvent -= OnSceneTransitionFinish;
-        }
-
-        public void OnApplicationQuit()
-        {
-
-        }
-
-        public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
-        {
         }
 
         public void MenuLoadedFresh()
         {
-            BeatSaberMarkupLanguage.Settings.BSMLSettings.instance.AddSettingsMenu(PluginName, "BailOutMode.UI.Settings.bsml", Config.instance);
+            
         }
-
-        public void OnSceneUnloaded(Scene scene)
-        {
-
-        }
-
-        public void OnActiveSceneChanged(Scene oldScene, Scene newScene)
-        {
-            Logger.log.Debug($"In scene {newScene.name} from {oldScene.name}");
-            if (BailOutController.instance != null)
-            {
-                GameObject.Destroy(BailOutController.instance);
-                Logger.log.Debug("Found controller onActiveSceneChanged, destroyed it");
-            }
-            if (newScene.name == "MenuCore")
-            {
-                //Code to execute when entering The Menu
-                //var boCtrl = new GameObject("BailOutController").AddComponent<BailOutController>();
-                //boCtrl.FailText.text = "Testing";
-
-            }
-
-            if (newScene.name == "GameCore")
-            {
-                //Code to execute when entering actual gameplay
-                _gameScenesManager.transitionDidFinishEvent += OnSceneTransitionFinish;
-            }
-        }
-
-        #region "Unused"
-        public void OnLevelWasLoaded(int level)
-        {
-
-        }
-
-        public void OnLevelWasInitialized(int level)
-        {
-        }
-
-        public void OnUpdate()
-        {
-            /*
-            if(UnityEngine.Input.GetKeyDown(KeyCode.U))
-            {
-                Console.WriteLine($"GameMode: {BS_Utils.Gameplay.Gamemode.GameMode}");
-            }
-            */
-        }
-
-        public void OnFixedUpdate()
-        {
-        }
-        #endregion
     }
 
 
