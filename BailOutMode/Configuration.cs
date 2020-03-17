@@ -2,6 +2,7 @@
 using IPA.Config.Stores;
 using BeatSaberMarkupLanguage.Attributes;
 
+[assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 namespace BailOutMode
 {
     public struct DefaultSettings
@@ -26,7 +27,7 @@ namespace BailOutMode
         }
 
     }
-    public class Configuration
+    internal class Configuration
     {
         internal static Configuration instance;
         private float _counterTextSize = DefaultSettings.CounterTextSize;
