@@ -3,7 +3,7 @@
   "name": "BailOutMode",
   "id": "bailoutmode",
   "description": "Allows you to continue playing songs without posting a score if you fail, but allows you to post scores if you don't.",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "gameVersion": "1.8.0",
   "dependsOn": {
     "BS Utils": "^1.4.4",
