@@ -178,12 +178,19 @@ namespace BailOutMode
                 }
             }
         }
+        private int lastFailDuration = Configuration.instance.FailEffectDuration;
         private WaitForSeconds failDurationWait = new WaitForSeconds(Configuration.instance.FailEffectDuration);
         public IEnumerator<WaitForSeconds> hideLevelFailed()
         {
 #if DEBUG
             Logger.log.Trace("BailOutController hideLevelFailed() CoRoutine");
 #endif
+            int failDuration = Configuration.instance.FailEffectDuration;
+            if (lastFailDuration != failDuration)
+            {
+                failDurationWait = new WaitForSeconds(Configuration.instance.FailEffectDuration);
+                lastFailDuration = failDuration;
+            }
             if (!isHiding)
             {
 #if DEBUG
