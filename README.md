@@ -1,20 +1,26 @@
 # BailOutMode
-<p>With this plugin enabled, your energy will reset when you fail and allow you to continue playing the song. You won't submit a score if you are bailed out.</p>
-<h2>Installation</h2>
-<u1>
-<li>Download the zip and extract it to your Beat Saber folder</li>
-</u1>
-<h2>Setup</h2>
-<u1>
-<li>Launch the game, you can change the settings for BailOutMode in the game settings (BailOutMode defaults to off)</li>
-<li>You can change the position of the fail counter text in UserData\BailOutMode.ini with the FailCounterPosition setting. The format is "#,#,#" (i.e. FailCounterPosition=0,.3,2.5). It represents the x,y,z of the text from the middle of the platform (where the feet are).</li>
-<li>If enabled, the Level Failed effect will show whenever your energy reaches 0. It will disappear after the set duration. If duration is set to 0, it will stay up until the end of the song.</li>
-<li>If RepeatFailEffect is enabled, the Level Failed effect will be displayed each time your energy reaches 0. Disable to only show the fail effect on the first fail.</li>
-<li>To conveniently find a suitable location and size for the Fail Counter Text, you can enable DynamicSettings. When enabled, BailOutMode will reread the FailCounterPosition and FailCounterTextSize settings from the ini file every time the text is updated during a song. This may have a slight performance impact, so it's recommended to disable after you are satisfied with the settings.</li>
-</u1>
-<h2>Dependencies</h2>
-<u1>
-<li><a href="https://www.modsaber.org/mod/bs-utils">BS_Utils</a> by Kyle1413</li>
-<li><a href="https://www.modsaber.org/mod/customui/">CustomUI</a> by Brian</li>
-<li><a href="https://github.com/pardeike/Harmony">Harmony</a> by Pardeike</li>
-</u1>
+With this plugin enabled, your energy will reset when you fail and allow you to continue playing the song. You won't submit a score if you are bailed out.
+
+## Installation
+* Download the zip and extract it to your Beat Saber folder.
+
+## Setup
+The following settings can be configured in-game:
+* **Enabled**: Whether or not BailOutMode is enabled.
+* **Show Fail Effect**: Shows the 'Level Failed' effect when you get bailed out.
+* **Repeat Fail Effect**: If enabled, shows the 'Level Failed' effect every time you get bailed out. If disabled, only shows on the first bail out for a song.
+* **Fail Effect Duration**: How long the 'Level Failed' effect is shown.
+* **Energy Reset Amount**: How much energy you are reset to after a bail out (30 to 100).
+* **Counter Text Position**: The position of the bail out counter text. Must be in the form **#,#,#** (x, y, z).
+* **Counter Text Size**: Size of the bail out counter text (default is 15).
+
+## Dependencies
+* <a href="https://github.com/Kylemc1413/Beat-Saber-Utils">BS_Utils</a> by Kyle1413
+* <a href="https://github.com/monkeymanboy/BeatSaberMarkupLanguage">BSML</a> by MonkeyManBoy
+* <a href="https://github.com/pardeike/Harmony">Harmony v2</a> by Pardeike
+
+# Build
+* To resolve reference paths you can do one of the following:
+  * Drag your Beat Saber game folder onto CreateJunctions.bat to create directory junctions inside the References folder.
+  * Create a BailOutMode.csproj.user file that sets the *BeatSaberDir* project property to the full path of your Beat Saber game folder.
+* Project should be ready to build.
