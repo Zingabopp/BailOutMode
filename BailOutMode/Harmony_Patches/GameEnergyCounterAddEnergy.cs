@@ -5,13 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using Harmony;
+using HarmonyLib;
 using BS_Utils;
-using static BailOutMode.ReflectionUtil;
 
 namespace BailOutMode.Harmony_Patches
 {
-    [HarmonyPatch(typeof(GameEnergyCounter), "AddEnergy",
+    [HarmonyPatch(typeof(GameEnergyCounter), nameof(GameEnergyCounter.AddEnergy),
         new Type[] {
         typeof(float)})]
     class GameEnergyCounterAddEnergy
@@ -39,7 +38,7 @@ namespace BailOutMode.Harmony_Patches
                     }
                     BailOutController.instance.numFails++;
                     //Logger.Debug($"{__instance.energy} + {value} puts us <= 0");
-                    value = (Config.instance.EnergyResetAmount / 100f) - __instance.energy;
+                    value = (Configuration.instance.EnergyResetAmount / 100f) - __instance.energy;
                     //Logger.Debug("Changing value to {0} to raise energy to {1}", value, Plugin.EnergyResetAmount);
                     BailOutController.instance.ShowLevelFailed();
                 }

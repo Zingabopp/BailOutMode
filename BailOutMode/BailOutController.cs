@@ -8,7 +8,7 @@ using TMPro;
 
 namespace BailOutMode
 {
-    class BailOutController : MonoBehaviour
+    internal class BailOutController : MonoBehaviour
     {
         #region "Fields with get/setters"
         public static BailOutController instance { get; private set; }
@@ -26,7 +26,7 @@ namespace BailOutMode
         {
             get
             {
-                return Config.instance.IsEnabled && (!isCampaign);
+                return Configuration.instance.IsEnabled && (!isCampaign);
             }
         }
 
@@ -120,7 +120,7 @@ namespace BailOutMode
             //Logger.Trace("BailOutController Start()");
             StartCoroutine(Initialize());
             LevelFailedEffect = GameObject.FindObjectsOfType<LevelFailedTextEffect>().FirstOrDefault();
-            
+
         }
 
         private bool isCampaign = false;
@@ -157,16 +157,16 @@ namespace BailOutMode
             //Logger.Trace("BailOutController ShowLevelFailed()");
             //BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName); Don't need this here
             UpdateFailText($"Bailed Out {numFails} time{(numFails != 1 ? "s" : "")}");
-            if (!isHiding && Config.instance.ShowFailEffect)
+            if (!isHiding && Configuration.instance.ShowFailEffect)
             {
                 try
                 {
-                    if (!Config.instance.RepeatFailEffect && numFails > 1)
+                    if (!Configuration.instance.RepeatFailEffect && numFails > 1)
                         return; // Don't want to repeatedly show fail effect, stop here.
 
                     //Logger.Debug("Showing fail effect");
                     LevelFailedEffect.ShowEffect();
-                    if (Config.instance.FailEffectDuration > 0)
+                    if (Configuration.instance.FailEffectDuration > 0)
                         StartCoroutine(hideLevelFailed());
                     else
                         isHiding = true; // Fail text never hides, so don't try to keep showing it
@@ -178,27 +178,35 @@ namespace BailOutMode
                 }
             }
         }
-        private WaitForSeconds failDurationWait = new WaitForSeconds(Config.instance.FailEffectDuration);
+        private WaitForSeconds failDurationWait = new WaitForSeconds(Configuration.instance.FailEffectDuration);
         public IEnumerator<WaitForSeconds> hideLevelFailed()
         {
+#if DEBUG
             Logger.log.Trace("BailOutController hideLevelFailed() CoRoutine");
+#endif
             if (!isHiding)
             {
-                Logger.log.Trace($"BailOutController, will hide LevelFailedEffect after {Config.instance.FailEffectDuration}s");
+#if DEBUG
+                Logger.log.Trace($"BailOutController, will hide LevelFailedEffect after {Configuration.instance.FailEffectDuration}s");
+#endif
                 isHiding = true;
                 yield return failDurationWait;
+#if DEBUG
                 Logger.log.Trace($"BailOutController, hiding LevelFailedEffect");
+#endif
                 LevelFailedEffect.gameObject.SetActive(false);
                 isHiding = false;
             }
+#if DEBUG
             else
                 Logger.log.Trace("BailOutController, skipping hideLevel because isHiding is true");
+#endif
             yield break;
         }
 
         public static void FacePosition(Transform obj, Vector3 targetPos)
         {
-            var rotAngle = Quaternion.LookRotation(StringToVector3(Config.instance.CounterTextPosition) - targetPos);
+            var rotAngle = Quaternion.LookRotation(StringToVector3(Configuration.instance.CounterTextPosition) - targetPos);
             obj.rotation = rotAngle;
         }
 
@@ -228,7 +236,7 @@ namespace BailOutMode
                 return null;
             }
             textMesh.font = font;
-            textMesh.fontSize = Config.instance.CounterTextSize;
+            textMesh.fontSize = Configuration.instance.CounterTextSize;
             textMesh.rectTransform.SetParent(parent.transform as RectTransform, false);
             textMesh.text = text;
             textMesh.color = Color.white;
@@ -245,19 +253,19 @@ namespace BailOutMode
         public static void CenterTextMesh(TextMeshProUGUI text)
         {
             text.ForceMeshUpdate();
-            var pos = StringToVector3(Config.instance.CounterTextPosition);
+            var pos = StringToVector3(Configuration.instance.CounterTextPosition);
             pos.x = pos.x - (text.renderedWidth * text.gameObject.transform.localScale.x) / 2;
             pos.y = pos.y + (text.renderedHeight * text.gameObject.transform.localScale.y);
             FacePosition(text.gameObject.transform, new Vector3(0, PlayerHeight, 0));
             text.transform.position = pos;
-            
+
         }
 
         public void UpdateFailText(string text)
         {
             FailText.text = text;
-            if (Config.instance.DynamicSettings)
-                FailText.fontSize = Config.instance.CounterTextSize;
+            if(FailText.fontSize != Configuration.instance.CounterTextSize)
+                FailText.fontSize = Configuration.instance.CounterTextSize;
             CenterTextMesh(FailText);
         }
 
