@@ -1,13 +1,17 @@
 {
-  "$schema": "https://github.com/nike4613/BSIPA-MetadataFileSchema/blob/master/Schema.json",
+  "$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
   "name": "BailOutMode",
+  "author": "Zingabopp",
   "id": "bailoutmode",
   "description": "Allows you to continue playing songs without posting a score if you fail, but allows you to post scores if you don't.",
-  "version": "1.7.0",
-  "gameVersion": "1.8.0",
+  "version": "1.7.1",
+  "gameVersion": "1.11.0",
   "dependsOn": {
-    "BS Utils": "^1.4.4",
-    "BeatSaberMarkupLanguage": "^1.2.0"
+    "BS Utils": "^1.4.11",
+    "BeatSaberMarkupLanguage": "^1.3.3"
   },
-  "author": "Zingabopp"
+  "links": {
+    "project-source": "https://github.com/Zingabopp/OBSControl",
+    "donate": "https://ko-fi.com/zingabopp"
+  }
 }
