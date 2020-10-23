@@ -26,7 +26,7 @@ namespace BailOutMode
         {
             get
             {
-                return Configuration.instance.IsEnabled && (!isCampaign);
+                return Configuration.instance.IsEnabled && BS_Utils.Plugin.LevelData.Mode == BS_Utils.Gameplay.Mode.Standard;
             }
         }
 
@@ -128,16 +128,6 @@ namespace BailOutMode
         private IEnumerator Initialize()
         {
             yield return new WaitForSeconds(0.5f);
-            //Logger.Trace("Checking for Campaign mode");
-            if (GameObject.FindObjectsOfType<MissionGameplaySceneSetup>().Count() > 0)
-            {
-                Logger.log.Info("Campaign mode detected, BailOutMode unavailable.");
-                isCampaign = true;
-            }
-            else
-            {
-                isCampaign = false;
-            }
             if ((GameManager != null) && (EnergyCounter != null) && IsEnabled)
             {
                 Logger.log.Info("BailOutMode enabled");
