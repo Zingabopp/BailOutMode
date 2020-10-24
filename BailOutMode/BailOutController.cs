@@ -26,7 +26,7 @@ namespace BailOutMode
         {
             get
             {
-                return Configuration.instance.IsEnabled && BS_Utils.Plugin.LevelData.Mode == BS_Utils.Gameplay.Mode.Standard;
+                return Configuration.instance.IsEnabled && BS_Utils.Plugin.LevelData.Mode != BS_Utils.Gameplay.Mode.Mission;
             }
         }
 

@@ -48,6 +48,11 @@
       <HintPath>$(BeatSaberDir)\Plugins\BS_Utils.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="GameplayCore">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\GameplayCore.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="HMLib, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\HMLib.dll</HintPath>
@@ -107,6 +112,8 @@
     <Compile Include="Harmony_Patches\GameEnergyCounterAddEnergy.cs" />
     <Compile Include="BailOutController.cs" />
     <Compile Include="Harmony_Patches\HandleSongDidFinish.cs" />
+    <Compile Include="Harmony_Patches\MultiplayerLocalActiveClient_ScoreControllerHandleScoreDidChange.cs" />
+    <Compile Include="Harmony_Patches\ScoreController_Patches.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

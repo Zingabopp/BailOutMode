@@ -12,7 +12,7 @@ namespace BailOutMode.Harmony_Patches
 {
     [HarmonyPatch(typeof(StandardLevelGameplayManager), nameof(StandardLevelGameplayManager.HandleSongDidFinish),
     new Type[] { })]
-    class StandardLevelGameplayManagerHandleSongDidFinish
+    internal class StandardLevelGameplayManagerHandleSongDidFinish
     {
         static bool Prefix(StandardLevelGameplayManager __instance, ref StandardLevelGameplayManager.GameState ____gameState)
         {

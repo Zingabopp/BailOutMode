@@ -16,6 +16,7 @@ namespace BailOutMode
     {
         public static string PluginName = "BailOutMode";
         private static Harmony harmony;
+        internal static event EventHandler LevelStarted;
 
         [Init]
         public void Init(IPA.Logging.Logger logger)
@@ -77,6 +78,7 @@ namespace BailOutMode
                 GameObject.Destroy(BailOutController.instance);
             }
             new GameObject("BailOutController").AddComponent<BailOutController>();
+            LevelStarted?.Invoke(this, EventArgs.Empty);
         }
 
         public void MenuLoadedFresh()
