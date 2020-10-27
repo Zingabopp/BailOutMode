@@ -26,7 +26,10 @@ namespace BailOutMode
         {
             get
             {
-                return Configuration.instance.IsEnabled && BS_Utils.Plugin.LevelData.Mode != BS_Utils.Gameplay.Mode.Mission;
+                return Configuration.instance.IsEnabled 
+                    && BS_Utils.Plugin.LevelData.Mode != BS_Utils.Gameplay.Mode.Mission
+                    && !BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData.gameplayModifiers.instaFail
+                    && BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData.gameplayModifiers.energyType == GameplayModifiers.EnergyType.Bar;
             }
         }
 
@@ -123,8 +126,6 @@ namespace BailOutMode
 
         }
 
-        private bool isCampaign = false;
-
         private IEnumerator Initialize()
         {
             yield return new WaitForSeconds(0.5f);
@@ -132,7 +133,8 @@ namespace BailOutMode
             {
                 Logger.log.Info("BailOutMode enabled");
                 //Logger.Trace("Removing HandleGameEnergyDidReach0");
-                EnergyCounter.gameEnergyDidReach0Event -= GameManager.HandleGameEnergyDidReach0;
+                // Seems this is not needed anymore
+                //EnergyCounter.gameEnergyDidReach0Event -= GameManager.HandleGameEnergyDidReach0;
             }
         }
 
