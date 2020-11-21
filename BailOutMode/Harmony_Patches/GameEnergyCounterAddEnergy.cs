@@ -39,7 +39,7 @@ namespace BailOutMode.Harmony_Patches
                     // Logger.log?.Debug($"{__instance.energy} + {value} puts us <= 0");
                     value = (Configuration.instance.EnergyResetAmount / 100f) - __instance.energy;
                     // Logger.log?.Debug($"Changing value to {value} to raise energy to {Configuration.instance.EnergyResetAmount}");
-                    BailOutController.instance.ShowLevelFailed();
+                    BailOutController.instance.OnLevelFailed();
                 }
             }
             return true;

@@ -127,6 +127,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="Harmony_Patches\GameEnergyCounterAddEnergy.cs" />
     <Compile Include="BailOutController.cs" />
+    <Compile Include="Harmony_Patches\MultiplayerHandleSongDidFinish.cs" />
     <Compile Include="Harmony_Patches\HandleSongDidFinish.cs" />
     <Compile Include="Harmony_Patches\MultiplayerLocalActiveClient_ScoreControllerHandleScoreDidChange.cs" />
     <Compile Include="Harmony_Patches\ScoreController_Patches.cs" />

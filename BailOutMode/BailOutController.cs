@@ -62,6 +62,18 @@ namespace BailOutMode
                 return _playerSettings;
             }
         }
+
+        private MultiplayerLocalActivePlayerGameplayManager _multiGameplayManager;
+        private MultiplayerLocalActivePlayerGameplayManager MultiGameplayManager
+        {
+            get
+            {
+                if (_multiGameplayManager == null)
+                    _multiGameplayManager = FindObjectOfType<MultiplayerLocalActivePlayerGameplayManager>();
+                return _multiGameplayManager;
+            }
+        }
+
         private float PlayerHeight
         {
             get
@@ -102,14 +114,9 @@ namespace BailOutMode
                 Logger.log.Info("BailOutMode enabled");
             if (multiplayerSessionManager == null)
                 Logger.log?.Warn($"connectedPlayerManager is null.");
-            foreach(var player in multiplayerSessionManager.connectedPlayers)
-            {
-                player.IsFailed();
-            }
             LevelFailedEffect = GameObject.FindObjectOfType<LevelFailedTextEffect>();
             if (LevelFailedEffect == null)
                 Logger.log?.Warn("Couldn't find LevelFailedTextEffect");
-
         }
 
         private void OnDestroy()
@@ -117,9 +124,11 @@ namespace BailOutMode
             Logger.log.Debug("Destroying BailOutController");
             instance = null;
         }
-
-        public void ShowLevelFailed()
+        private bool _lastStandingCheckActive;
+        public void OnLevelFailed()
         {
+            if (multiplayerSessionManager != null && multiplayerSessionManager.isConnected && !_lastStandingCheckActive)
+                StartCoroutine(CheckLastStanding());
             if(LevelFailedEffect == null)
                 LevelFailedEffect = GameObject.FindObjectOfType<LevelFailedTextEffect>();
 
@@ -178,6 +187,53 @@ namespace BailOutMode
                 Logger.log.Trace("BailOutController, skipping hideLevel because isHiding is true");
 #endif
             yield break;
+        }
+
+        private WaitForSeconds _lastStandingWait = new WaitForSeconds(5);
+        private IEnumerator<WaitForSeconds> CheckLastStanding()
+        {
+            _lastStandingCheckActive = true;
+            while (true)
+            {
+                if (multiplayerSessionManager.connectedPlayerCount == 0)
+                {
+#if DEBUG
+                    Logger.log?.Debug($"connectedPlayerCount is {multiplayerSessionManager.connectedPlayerCount}, skipping last standing check.");
+#endif
+                    yield return _lastStandingWait;
+                }
+                else
+                {
+#if DEBUG
+                    Logger.log?.Debug($"connectedPlayerCount is {multiplayerSessionManager.connectedPlayerCount}. Checking if they failed.");
+#endif
+                    IConnectedPlayer[] players = multiplayerSessionManager.connectedPlayers.ToArray();
+                    bool hasActivePlayer = false;
+                    for (int i = 0; i < players.Length; i++)
+                    {
+                        if (!players[i].isMe && !players[i].IsFailed())
+                        {
+                            hasActivePlayer = true;
+                        }
+#if DEBUG
+                        if (players[i].isMe)
+                            Logger.log?.Debug($"Local player flagged as failed: {players[i].IsFailed()}");
+#endif
+                    }
+                    if (!hasActivePlayer)
+                    {
+                        Logger.log?.Debug($"All other players failed, triggering level failed.");
+                        if (MultiGameplayManager != null)
+                        {
+                            MultiGameplayManager.HandleGameEnergyDidReach0();
+                        }
+                        else
+                            Logger.log?.Warn($"Tried to fail level, but ILevelEndActions isn't a StandardLevelGameplayManager.");
+                    }
+                    yield return _lastStandingWait;
+                }
+            }
+            _lastStandingCheckActive = false;
         }
 
         public static void FacePosition(Transform obj, Vector3 targetPos)
