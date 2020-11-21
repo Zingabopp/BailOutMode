@@ -34,7 +34,7 @@ namespace BailOutMode.Harmony_Patches
                 Logger.log.Debug(ex);
             }
 
-            return true;
+            return false;
         }
     }
 }
