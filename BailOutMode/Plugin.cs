@@ -2,6 +2,8 @@
 using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
+using IPA.Loader;
+using SiraUtil.Zenject;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -16,13 +18,18 @@ namespace BailOutMode
     {
         public static string PluginName = "BailOutMode";
         private static Harmony harmony;
+        internal static PluginMetadata PluginMetadata = null;
         internal static event EventHandler LevelStarted;
+        internal Zenjector Zenjector;
 
         [Init]
-        public void Init(IPA.Logging.Logger logger)
+        public void Init(IPA.Logging.Logger logger, Zenjector zenjector, PluginMetadata pluginMetadata)
         {
             Logger.log = logger;
             harmony = new Harmony("com.github.zingabopp.bailoutmode");
+            PluginMetadata = pluginMetadata;
+            Zenjector = zenjector;
+            zenjector.OnGame<BailOutInstaller>(false);
         }
 
         [Init]
@@ -77,7 +84,7 @@ namespace BailOutMode
             {
                 GameObject.Destroy(BailOutController.instance);
             }
-            new GameObject("BailOutController").AddComponent<BailOutController>();
+            //new GameObject("BailOutController").AddComponent<BailOutController>();
             LevelStarted?.Invoke(this, EventArgs.Empty);
         }
 

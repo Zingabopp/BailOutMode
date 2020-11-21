@@ -5,22 +5,27 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using TMPro;
+using Zenject;
 
 namespace BailOutMode
 {
     internal class BailOutController : MonoBehaviour
     {
+#pragma warning disable CS0649
+        [Inject]
+        private readonly IMultiplayerSessionManager multiplayerSessionManager;
+        [Inject]
+        private readonly GameplayCoreSceneSetupData gameplayCoreSceneSetupData;
+#pragma warning restore CS0649
         #region "Fields with get/setters"
         public static BailOutController instance { get; private set; }
-        private LevelFailedTextEffect _levelFailedEffect;
-        private StandardLevelGameplayManager _gameManager;
-        private GameEnergyCounter _energyCounter;
         private TextMeshProUGUI _failText;
         private static PlayerSpecificSettings _playerSettings;
         #endregion
         #region "Fields"
         public bool isHiding = false;
         public int numFails = 0;
+        private LevelFailedTextEffect LevelFailedEffect;
 
         public bool IsEnabled
         {
@@ -28,8 +33,8 @@ namespace BailOutMode
             {
                 return Configuration.instance.IsEnabled 
                     && BS_Utils.Plugin.LevelData.Mode != BS_Utils.Gameplay.Mode.Mission
-                    && !BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData.gameplayModifiers.instaFail
-                    && BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData.gameplayModifiers.energyType == GameplayModifiers.EnergyType.Bar;
+                    && !gameplayCoreSceneSetupData.gameplayModifiers.instaFail
+                    && gameplayCoreSceneSetupData.gameplayModifiers.energyType == GameplayModifiers.EnergyType.Bar;
             }
         }
 
@@ -44,36 +49,6 @@ namespace BailOutMode
             set { _failText = value; }
         }
 
-        private LevelFailedTextEffect LevelFailedEffect
-        {
-            get
-            {
-                if (_levelFailedEffect == null)
-                    _levelFailedEffect = Resources.FindObjectsOfTypeAll<LevelFailedTextEffect>().FirstOrDefault();
-                return _levelFailedEffect;
-            }
-            set { _levelFailedEffect = value; }
-        }
-
-        private StandardLevelGameplayManager GameManager
-        {
-            get
-            {
-                if (_gameManager == null)
-                    _gameManager = GameObject.FindObjectsOfType<StandardLevelGameplayManager>().FirstOrDefault();
-                return _gameManager;
-            }
-        }
-
-        private GameEnergyCounter EnergyCounter
-        {
-            get
-            {
-                if (_energyCounter == null)
-                    _energyCounter = GameObject.FindObjectsOfType<GameEnergyCounter>().FirstOrDefault();
-                return _energyCounter;
-            }
-        }
         private static PlayerSpecificSettings PlayerSettings
         {
             get
@@ -87,7 +62,7 @@ namespace BailOutMode
                 return _playerSettings;
             }
         }
-        private static float PlayerHeight
+        private float PlayerHeight
         {
             get
             {
@@ -120,22 +95,21 @@ namespace BailOutMode
 
         public void Start()
         {
-            //Logger.Trace("BailOutController Start()");
-            StartCoroutine(Initialize());
-            LevelFailedEffect = GameObject.FindObjectsOfType<LevelFailedTextEffect>().FirstOrDefault();
-
-        }
-
-        private IEnumerator Initialize()
-        {
-            yield return new WaitForSeconds(0.5f);
-            if ((GameManager != null) && (EnergyCounter != null) && IsEnabled)
-            {
+            Logger.log?.Debug("BailOutController Start()");
+            if (BS_Utils.Gameplay.ScoreSubmission.Disabled)
+                Logger.log?.Warn($"ScoreSubmission already disabled by {BS_Utils.Gameplay.ScoreSubmission.ModString}");
+            if(IsEnabled)
                 Logger.log.Info("BailOutMode enabled");
-                //Logger.Trace("Removing HandleGameEnergyDidReach0");
-                // Seems this is not needed anymore
-                //EnergyCounter.gameEnergyDidReach0Event -= GameManager.HandleGameEnergyDidReach0;
+            if (multiplayerSessionManager == null)
+                Logger.log?.Warn($"connectedPlayerManager is null.");
+            foreach(var player in multiplayerSessionManager.connectedPlayers)
+            {
+                player.IsFailed();
             }
+            LevelFailedEffect = GameObject.FindObjectOfType<LevelFailedTextEffect>();
+            if (LevelFailedEffect == null)
+                Logger.log?.Warn("Couldn't find LevelFailedTextEffect");
+
         }
 
         private void OnDestroy()
@@ -146,10 +120,13 @@ namespace BailOutMode
 
         public void ShowLevelFailed()
         {
+            if(LevelFailedEffect == null)
+                LevelFailedEffect = GameObject.FindObjectOfType<LevelFailedTextEffect>();
+
             //Logger.Trace("BailOutController ShowLevelFailed()");
             //BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName); Don't need this here
             UpdateFailText($"Bailed Out {numFails} time{(numFails != 1 ? "s" : "")}");
-            if (!isHiding && Configuration.instance.ShowFailEffect)
+            if (!isHiding && Configuration.instance.ShowFailEffect && LevelFailedEffect != null)
             {
                 try
                 {
@@ -249,13 +226,13 @@ namespace BailOutMode
             return textMesh;
         }
 
-        public static void CenterTextMesh(TextMeshProUGUI text)
+        public static void CenterTextMesh(TextMeshProUGUI text, float playerHeight)
         {
             text.ForceMeshUpdate();
             var pos = StringToVector3(Configuration.instance.CounterTextPosition);
             pos.x = pos.x - (text.renderedWidth * text.gameObject.transform.localScale.x) / 2;
             pos.y = pos.y + (text.renderedHeight * text.gameObject.transform.localScale.y);
-            FacePosition(text.gameObject.transform, new Vector3(0, PlayerHeight, 0));
+            FacePosition(text.gameObject.transform, new Vector3(0, playerHeight, 0));
             text.transform.position = pos;
 
         }
@@ -265,7 +242,7 @@ namespace BailOutMode
             FailText.text = text;
             if(FailText.fontSize != Configuration.instance.CounterTextSize)
                 FailText.fontSize = Configuration.instance.CounterTextSize;
-            CenterTextMesh(FailText);
+            CenterTextMesh(FailText, PlayerHeight);
         }
 
         public static Vector3 StringToVector3(string vStr)
