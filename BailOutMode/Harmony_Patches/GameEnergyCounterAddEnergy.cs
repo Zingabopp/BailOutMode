@@ -30,9 +30,10 @@ namespace BailOutMode.Harmony_Patches
                         || BailOutController.instance.numFails == 0)
                     {
                         Logger.log.Info("First fail detected, disabling score submission");
+                        if (BS_Utils.Gameplay.ScoreSubmission.Disabled)
+                            Logger.log?.Debug($"ScoreSubmission already disabled by {BS_Utils.Gameplay.ScoreSubmission.ModString}");
                     }
-                    if (!BS_Utils.Gameplay.ScoreSubmission.Disabled)
-                        BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
+                    BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName);
                     if (!BS_Utils.Gameplay.ScoreSubmission.Disabled)
                         Logger.log.Error($"Told BS_Utils to disable submission, but it seems to still be enabled.");
                     BailOutController.instance.numFails++;
