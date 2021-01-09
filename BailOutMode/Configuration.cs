@@ -8,6 +8,7 @@ namespace BailOutMode
     public struct DefaultSettings
     {
         public const bool IsEnabled = true;
+        public const bool EnableGameplayTab = true;
         public const bool ShowFailEffect = true;
         public const bool RepeatFailEffect = false;
         public const bool DynamicSettings = false;
@@ -32,13 +33,25 @@ namespace BailOutMode
         internal static Configuration instance;
         private float _counterTextSize = DefaultSettings.CounterTextSize;
         private int _energyReset = DefaultSettings.EnergyResetAmount;
-
+        private bool _enableGameplayTab = DefaultSettings.EnableGameplayTab;
         public const int nrgResetMin = 30;
         public const int nrgResetMax = 100;
 
         [UIValue("IsEnabled")]
         public virtual bool IsEnabled { get; set; } = DefaultSettings.IsEnabled;
 
+        [UIValue("EnableGameplayTab")]
+        public virtual bool EnableGameplayTab
+        {
+            get => _enableGameplayTab;
+            set
+            {
+                if (_enableGameplayTab == value)
+                    return;
+                _enableGameplayTab = value;
+                Plugin.instance.SetGameplaySetupTab(value);
+            }
+        }
         [UIValue("ShowFailEffect")]
         public virtual bool ShowFailEffect { get; set; } = DefaultSettings.ShowFailEffect;
 

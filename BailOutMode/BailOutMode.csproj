@@ -140,6 +140,7 @@
     <None Include="CreateJunctions.bat" />
     <EmbeddedResource Include="manifest.json" />
     <EmbeddedResource Include="UI\Settings.bsml" />
+    <EmbeddedResource Include="UI\GameplaySettings.bsml" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

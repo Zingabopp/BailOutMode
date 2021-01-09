@@ -1,5 +1,6 @@
 ﻿<settings-container xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
   <bool-setting text='Enabled' value='IsEnabled' hover-hint='Enable BailOutMode'/>
+  <bool-setting text='Enable Gameplay Tab' value='EnableGameplayTab' hover-hint='Enable gameplay setup tab'/>
   <bool-setting text='Show Fail Effect' value='ShowFailEffect' hover-hint='Show the Level Failed effect when bailed out'/>
   <bool-setting text='Repeat Fail Effect' value='RepeatFailEffect' hover-hint='Show the Level Failed effect every time a bail out happens'/>
   <increment-setting text='Fail Effect Duration' value='FailEffectDuration' hover-hint='How long the Level Failed effect is displayed' integer-only='true' increment='1' min='1' max='15'/>
