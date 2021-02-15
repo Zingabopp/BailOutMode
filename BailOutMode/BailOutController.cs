@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Playables;
+using HarmonyLib;
 using TMPro;
 using Zenject;
 
@@ -143,11 +145,9 @@ namespace BailOutMode
                         return; // Don't want to repeatedly show fail effect, stop here.
 
                     //Logger.Debug("Showing fail effect");
-                    LevelFailedEffect.ShowEffect();
-                    if (Configuration.instance.FailEffectDuration > 0)
-                        StartCoroutine(hideLevelFailed());
-                    else
-                        isHiding = true; // Fail text never hides, so don't try to keep showing it
+                    GameEnergyUIPanel gameEnergyUIPanel = GameObject.FindObjectsOfType<GameEnergyUIPanel>().FirstOrDefault();
+                    PlayableDirector failDirector = (PlayableDirector)AccessTools.Field(typeof(GameEnergyUIPanel), "_playableDirector").GetValue(gameEnergyUIPanel);
+                    failDirector.Play();
                 }
                 catch (Exception ex)
                 {
