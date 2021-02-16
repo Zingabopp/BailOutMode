@@ -9,6 +9,7 @@ namespace BailOutMode
     {
         public const bool IsEnabled = true;
         public const bool EnableGameplayTab = true;
+        public const bool ShowFailAnimation = true;
         public const bool ShowFailEffect = true;
         public const bool RepeatFailEffect = false;
         public const bool DynamicSettings = false;
@@ -52,6 +53,10 @@ namespace BailOutMode
                 Plugin.instance.SetGameplaySetupTab(value);
             }
         }
+
+        [UIValue("ShowFailAnimation")]
+        public virtual bool ShowFailAnimation { get; set; } = DefaultSettings.ShowFailAnimation;
+
         [UIValue("ShowFailEffect")]
         public virtual bool ShowFailEffect { get; set; } = DefaultSettings.ShowFailEffect;
 

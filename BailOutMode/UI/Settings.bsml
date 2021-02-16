@@ -1,9 +1,10 @@
 ﻿<settings-container xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
   <bool-setting text='Enabled' value='IsEnabled' hover-hint='Enable BailOutMode'/>
   <bool-setting text='Enable Gameplay Tab' value='EnableGameplayTab' hover-hint='Enable gameplay setup tab'/>
-  <bool-setting text='Show Fail Effect' value='ShowFailEffect' hover-hint='Show the Level Failed effect when bailed out'/>
-  <bool-setting text='Repeat Fail Effect' value='RepeatFailEffect' hover-hint='Show the Level Failed effect every time a bail out happens'/>
-  <increment-setting text='Fail Effect Duration' value='FailEffectDuration' hover-hint='How long the Level Failed effect is displayed' integer-only='true' increment='1' min='1' max='15'/>
+  <bool-setting text='Show Fail Energy Bar Animation' value='ShowFailAnimation' hover-hint='Show the energy bar fail animation when bailed out'/>
+  <bool-setting text='Show Fail Text Effect' value='ShowFailEffect' hover-hint='Show the Level Failed text effect when bailed out'/>
+  <bool-setting text='Repeat Fail Effects' value='RepeatFailEffect' hover-hint='Show the Level Failed effects every time a bail out happens'/>
+  <increment-setting text='Fail Text Effect Duration' value='FailEffectDuration' hover-hint='How long the Level Failed text effect is displayed' integer-only='true' increment='1' min='1' max='15'/>
   <slider-setting text='Energy Reset Amount' value='EnergyResetAmount' hover-hint='How much energy is gained back after a bail out' min='30' max='100' integer-only='true'/>
   <string-setting text='Counter Text Position' value='CounterTextPosition' hover-hint='Where the Bail Out counter text is shown'/>
   <increment-setting text='Counter Text Size' value='CounterTextSize' hover-hint='How large the text of the Bail Out counter is' min='1'/>

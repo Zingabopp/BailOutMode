@@ -28,6 +28,7 @@ namespace BailOutMode
         public bool isHiding = false;
         public int numFails = 0;
         private LevelFailedTextEffect LevelFailedEffect;
+        private PlayableDirector LevelFailedEnergyBarAnimation;
 
         public bool IsEnabled
         {
@@ -119,6 +120,7 @@ namespace BailOutMode
             LevelFailedEffect = GameObject.FindObjectOfType<LevelFailedTextEffect>();
             if (LevelFailedEffect == null)
                 Logger.log?.Warn("Couldn't find LevelFailedTextEffect");
+            LevelFailedEnergyBarAnimation = (PlayableDirector)AccessTools.Field(typeof(GameEnergyUIPanel), "_playableDirector").GetValue(GameObject.FindObjectOfType<GameEnergyUIPanel>());
         }
 
         private void OnDestroy()
@@ -137,23 +139,33 @@ namespace BailOutMode
             //Logger.Trace("BailOutController ShowLevelFailed()");
             //BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName); Don't need this here
             UpdateFailText($"Bailed Out {numFails} time{(numFails != 1 ? "s" : "")}");
-            if (!isHiding && Configuration.instance.ShowFailEffect && LevelFailedEffect != null)
+            try
             {
-                try
-                {
-                    if (!Configuration.instance.RepeatFailEffect && numFails > 1)
-                        return; // Don't want to repeatedly show fail effect, stop here.
+                if (!Configuration.instance.RepeatFailEffect && numFails > 1)
+                    return; // Don't want to repeatedly show fail effect, stop here.
 
-                    //Logger.Debug("Showing fail effect");
-                    GameEnergyUIPanel gameEnergyUIPanel = GameObject.FindObjectsOfType<GameEnergyUIPanel>().FirstOrDefault();
-                    PlayableDirector failDirector = (PlayableDirector)AccessTools.Field(typeof(GameEnergyUIPanel), "_playableDirector").GetValue(gameEnergyUIPanel);
-                    failDirector.Play();
-                }
-                catch (Exception ex)
+                //Logger.Debug("Showing fail effects");
+                if (!isHiding && Configuration.instance.ShowFailEffect && LevelFailedEffect != null)
                 {
-                    Logger.log.Error($"Exception trying to show the fail Effect: {ex.Message}");
-                    Logger.log.Debug(ex);
+                    LevelFailedEffect.ShowEffect();
+                    if (Configuration.instance.FailEffectDuration > 0)
+                        StartCoroutine(hideLevelFailed());
+                    else
+                        isHiding = true; // Fail text never hides, so don't try to keep showing it
                 }
+
+                if (Configuration.instance.ShowFailAnimation && LevelFailedEnergyBarAnimation != null)
+                {
+                    // Cancel any in-progress fail animation before playing a new animation, to prevent missing an animation when failing multiple times in quick succession.
+                    LevelFailedEnergyBarAnimation.Stop();
+                    LevelFailedEnergyBarAnimation.Play();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.log.Error($"Exception trying to show the fail Effects: {ex.Message}");
+                Logger.log.Debug(ex);
             }
         }
         private int lastFailDuration = Configuration.instance.FailEffectDuration;
