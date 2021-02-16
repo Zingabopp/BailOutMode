@@ -125,7 +125,7 @@
   <ItemGroup>
     <Compile Include="BailOutInstaller.cs" />
     <Compile Include="Configuration.cs" />
-    <Compile Include="Harmony_Patches\GameEnergyCounterAddEnergy.cs" />
+    <Compile Include="Harmony_Patches\GameEnergyCounterProcessEnergyChange.cs" />
     <Compile Include="BailOutController.cs" />
     <Compile Include="Harmony_Patches\MultiplayerHandleSongDidFinish.cs" />
     <Compile Include="Harmony_Patches\HandleSongDidFinish.cs" />

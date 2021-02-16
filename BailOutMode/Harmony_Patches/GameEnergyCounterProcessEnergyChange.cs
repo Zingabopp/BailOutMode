@@ -10,22 +10,22 @@ using BS_Utils;
 
 namespace BailOutMode.Harmony_Patches
 {
-    [HarmonyPatch(typeof(GameEnergyCounter), nameof(GameEnergyCounter.AddEnergy),
+    [HarmonyPatch(typeof(GameEnergyCounter), nameof(GameEnergyCounter.ProcessEnergyChange),
         new Type[] {
         typeof(float)})]
-    class GameEnergyCounterAddEnergy
+    class GameEnergyCounterProcessEnergyChange
     {
-        static bool Prefix(GameEnergyCounter __instance, ref float value)
+        static bool Prefix(GameEnergyCounter __instance, ref float energyChange)
         {
-            //Logger.Trace("In GameEnergyCounter.AddEnergy()");
+            //Logger.Trace("In GameEnergyCounter.ProcessEnergyChange()");
             if (BailOutController.instance == null)
                 return true;
-            if (value < 0f && BailOutController.instance.IsEnabled)
+            if (energyChange < 0f && BailOutController.instance.IsEnabled)
             {
-                //Logger.Trace("Negative energy change detected: {0}", value);
-                if (__instance.energy + value <= 1E-05f)
+                //Logger.Trace("Negative energy change detected: {0}", energyChange);
+                if (__instance.energy + energyChange <= 1E-05f)
                 {
-                    // Logger.log?.Debug($"Fail detected. Current Energy: {__instance.energy}, Energy Change: {value}");
+                    // Logger.log?.Debug($"Fail detected. Current Energy: {__instance.energy}, Energy Change: {energyChange}");
                     if (BS_Utils.Gameplay.ScoreSubmission.Disabled == false
                         || BailOutController.instance.numFails == 0)
                     {
@@ -37,9 +37,9 @@ namespace BailOutMode.Harmony_Patches
                     if (!BS_Utils.Gameplay.ScoreSubmission.Disabled)
                         Logger.log.Error($"Told BS_Utils to disable submission, but it seems to still be enabled.");
                     BailOutController.instance.numFails++;
-                    // Logger.log?.Debug($"{__instance.energy} + {value} puts us <= 0");
-                    value = (Configuration.instance.EnergyResetAmount / 100f) - __instance.energy;
-                    // Logger.log?.Debug($"Changing value to {value} to raise energy to {Configuration.instance.EnergyResetAmount}");
+                    // Logger.log?.Debug($"{__instance.energy} + {energyChange} puts us <= 0");
+                    energyChange = (Configuration.instance.EnergyResetAmount / 100f) - __instance.energy;
+                    // Logger.log?.Debug($"Changing energyChange to {energyChange} to raise energy to {Configuration.instance.EnergyResetAmount}");
                     BailOutController.instance.OnLevelFailed();
                 }
             }
