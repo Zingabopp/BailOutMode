@@ -273,7 +273,7 @@ namespace BailOutMode
             Teko-Medium SDF
             Teko-Medium SDF No Glow Fading
             */
-            var font = Instantiate(Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(t => t.name == "Teko-Medium SDF No Glow"));
+            TMP_FontAsset font = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().FirstOrDefault(t => t.name == "Teko-Medium SDF No Glow");
             if (font == null)
             {
                 Logger.log.Error("Could not locate font asset, unable to display text");
@@ -307,6 +307,7 @@ namespace BailOutMode
 
         public void UpdateFailText(string text)
         {
+            if (FailText == null) return; // An error message is already printed in CreateText, called by the FailText getter.
             FailText.text = text;
             if(FailText.fontSize != Configuration.instance.CounterTextSize)
                 FailText.fontSize = Configuration.instance.CounterTextSize;
