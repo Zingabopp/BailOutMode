@@ -117,7 +117,7 @@ namespace BailOutMode
                 Logger.log.Info("BailOutMode enabled");
             if (multiplayerSessionManager == null)
                 Logger.log?.Warn($"connectedPlayerManager is null.");
-            LevelFailedEffect = GameObject.FindObjectOfType<LevelFailedTextEffect>();
+            LevelFailedEffect = Resources.FindObjectsOfTypeAll<LevelFailedTextEffect>().FirstOrDefault();
             if (LevelFailedEffect == null)
                 Logger.log?.Warn("Couldn't find LevelFailedTextEffect");
             LevelFailedEnergyBarAnimation = (PlayableDirector)AccessTools.Field(typeof(GameEnergyUIPanel), "_playableDirector").GetValue(GameObject.FindObjectOfType<GameEnergyUIPanel>());
@@ -134,7 +134,7 @@ namespace BailOutMode
             if (multiplayerSessionManager != null && multiplayerSessionManager.isConnected && !_lastStandingCheckActive)
                 StartCoroutine(CheckLastStanding());
             if(LevelFailedEffect == null)
-                LevelFailedEffect = GameObject.FindObjectOfType<LevelFailedTextEffect>();
+                LevelFailedEffect = Resources.FindObjectsOfTypeAll<LevelFailedTextEffect>().FirstOrDefault();
 
             //Logger.Trace("BailOutController ShowLevelFailed()");
             //BS_Utils.Gameplay.ScoreSubmission.DisableSubmission(Plugin.PluginName); Don't need this here
@@ -268,12 +268,10 @@ namespace BailOutMode
             GameObject gameObj = parent.gameObject;
             gameObj.SetActive(false);
             TextMeshProUGUI textMesh = gameObj.AddComponent<TextMeshProUGUI>();
-            /*
-            Teko-Medium SDF No Glow
-            Teko-Medium SDF
-            Teko-Medium SDF No Glow Fading
-            */
-            var font = Instantiate(Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(t => t.name == "Teko-Medium SDF No Glow"));
+            TMP_FontAsset[] allFonts = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
+            Logger.log?.Debug("Found fonts:");
+            Logger.log?.Debug(string.Join<TMP_FontAsset>("\n'", allFonts));
+            TMP_FontAsset font = allFonts.FirstOrDefault(t => t.name == "Teko-Medium SDF");
             if (font == null)
             {
                 Logger.log.Error("Could not locate font asset, unable to display text");
@@ -307,6 +305,7 @@ namespace BailOutMode
 
         public void UpdateFailText(string text)
         {
+            if (FailText == null) return; // An error message is already printed in CreateText, called by the FailText getter.
             FailText.text = text;
             if(FailText.fontSize != Configuration.instance.CounterTextSize)
                 FailText.fontSize = Configuration.instance.CounterTextSize;
