@@ -8,6 +8,7 @@ using UnityEngine.Playables;
 using HarmonyLib;
 using TMPro;
 using Zenject;
+using BailOutMode.Harmony_Patches;
 
 namespace BailOutMode
 {
@@ -15,20 +16,20 @@ namespace BailOutMode
     {
 #pragma warning disable CS0649
         [Inject]
-        private readonly IMultiplayerSessionManager multiplayerSessionManager;
+        private readonly IMultiplayerSessionManager multiplayerSessionManager = null!;
         [Inject]
-        private readonly GameplayCoreSceneSetupData gameplayCoreSceneSetupData;
+        private readonly GameplayCoreSceneSetupData gameplayCoreSceneSetupData = null!;
 #pragma warning restore CS0649
         #region "Fields with get/setters"
-        public static BailOutController instance { get; private set; }
-        private TextMeshProUGUI _failText;
-        private static PlayerSpecificSettings _playerSettings;
+        public static BailOutController? instance { get; private set; }
+        private TextMeshProUGUI? _failText;
+        private static PlayerSpecificSettings? _playerSettings;
         #endregion
         #region "Fields"
         public bool isHiding = false;
         public int numFails = 0;
-        private LevelFailedTextEffect LevelFailedEffect;
-        private PlayableDirector LevelFailedEnergyBarAnimation;
+        private LevelFailedTextEffect? LevelFailedEffect;
+        private PlayableDirector? LevelFailedEnergyBarAnimation;
 
         public bool IsEnabled
         {
@@ -41,7 +42,7 @@ namespace BailOutMode
             }
         }
 
-        public TextMeshProUGUI FailText
+        public TextMeshProUGUI? FailText
         {
             get
             {
@@ -52,7 +53,7 @@ namespace BailOutMode
             set { _failText = value; }
         }
 
-        private static PlayerSpecificSettings PlayerSettings
+        private static PlayerSpecificSettings? PlayerSettings
         {
             get
             {
@@ -60,13 +61,13 @@ namespace BailOutMode
                 {
                     _playerSettings = BS_Utils.Plugin.LevelData?.GameplayCoreSceneSetupData?.playerSpecificSettings;
                     if (_playerSettings == null)
-                        Logger.log.Warn($"Unable to find PlayerSettings");
+                        Plugin.Log?.Warn($"Unable to find PlayerSettings");
                 }
                 return _playerSettings;
             }
         }
 
-        private MultiplayerLocalActivePlayerGameplayManager _multiGameplayManager;
+        private MultiplayerLocalActivePlayerGameplayManager? _multiGameplayManager;
         private MultiplayerLocalActivePlayerGameplayManager MultiGameplayManager
         {
             get
@@ -88,7 +89,7 @@ namespace BailOutMode
                 }
                 else
                 {
-                    Logger.log.Warn("Unable to find PlayerSettings, using 1.8 for player height");
+                    Plugin.Log?.Warn("Unable to find PlayerSettings, using 1.8 for player height");
                     return 1.8f;
                 }
             }
@@ -110,23 +111,48 @@ namespace BailOutMode
 
         public void Start()
         {
-            Logger.log?.Debug("BailOutController Start()");
+            Plugin.Log?.Debug("BailOutController Start()");
             if (BS_Utils.Gameplay.ScoreSubmission.Disabled)
-                Logger.log?.Warn($"ScoreSubmission already disabled by {BS_Utils.Gameplay.ScoreSubmission.ModString}");
+                Plugin.Log?.Warn($"ScoreSubmission already disabled by {BS_Utils.Gameplay.ScoreSubmission.ModString}");
             if(IsEnabled)
-                Logger.log.Info("BailOutMode enabled");
+                Plugin.Log?.Info("BailOutMode enabled");
             if (multiplayerSessionManager == null)
-                Logger.log?.Warn($"connectedPlayerManager is null.");
+                Plugin.Log?.Warn($"connectedPlayerManager is null.");
             LevelFailedEffect = Resources.FindObjectsOfTypeAll<LevelFailedTextEffect>().FirstOrDefault();
             if (LevelFailedEffect == null)
-                Logger.log?.Warn("Couldn't find LevelFailedTextEffect");
+                Plugin.Log?.Warn("Couldn't find LevelFailedTextEffect");
             LevelFailedEnergyBarAnimation = (PlayableDirector)AccessTools.Field(typeof(GameEnergyUIPanel), "_playableDirector").GetValue(GameObject.FindObjectOfType<GameEnergyUIPanel>());
+        }
+
+        public void OnEnable()
+        {
+            try
+            {
+                HarmonyManager.ApplyDefaultPatches();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.Error($"Error applying Harmony patches: {ex.Message}");
+                Plugin.Log?.Debug(ex.ToString());
+            }
+        }
+
+        public void OnDisable()
+        {
+            try
+            {
+                HarmonyManager.UnpatchAll();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log?.Error($"Error removing Harmony patches: {ex.Message}");
+                Plugin.Log?.Debug(ex.ToString());
+            }
         }
 
         private void OnDestroy()
         {
-            Logger.log.Debug("Destroying BailOutController");
-            instance = null;
+            Plugin.Log?.Debug("Destroying BailOutController");
         }
         private bool _lastStandingCheckActive;
         public void OnLevelFailed()
@@ -164,8 +190,8 @@ namespace BailOutMode
             }
             catch (Exception ex)
             {
-                Logger.log.Error($"Exception trying to show the fail Effects: {ex.Message}");
-                Logger.log.Debug(ex);
+                Plugin.Log?.Error($"Exception trying to show the fail Effects: {ex.Message}");
+                Plugin.Log?.Debug(ex);
             }
         }
         private int lastFailDuration = Configuration.instance.FailEffectDuration;
@@ -173,7 +199,7 @@ namespace BailOutMode
         public IEnumerator<WaitForSeconds> hideLevelFailed()
         {
 #if DEBUG
-            Logger.log.Trace("BailOutController hideLevelFailed() CoRoutine");
+            Plugin.Log?.Trace("BailOutController hideLevelFailed() CoRoutine");
 #endif
             int failDuration = Configuration.instance.FailEffectDuration;
             if (lastFailDuration != failDuration)
@@ -184,19 +210,19 @@ namespace BailOutMode
             if (!isHiding)
             {
 #if DEBUG
-                Logger.log.Trace($"BailOutController, will hide LevelFailedEffect after {Configuration.instance.FailEffectDuration}s");
+                Plugin.Log?.Trace($"BailOutController, will hide LevelFailedEffect after {Configuration.instance.FailEffectDuration}s");
 #endif
                 isHiding = true;
                 yield return failDurationWait;
 #if DEBUG
-                Logger.log.Trace($"BailOutController, hiding LevelFailedEffect");
+                Plugin.Log?.Trace($"BailOutController, hiding LevelFailedEffect");
 #endif
-                LevelFailedEffect.gameObject.SetActive(false);
+                LevelFailedEffect?.gameObject.SetActive(false);
                 isHiding = false;
             }
 #if DEBUG
             else
-                Logger.log.Trace("BailOutController, skipping hideLevel because isHiding is true");
+                Plugin.Log?.Trace("BailOutController, skipping hideLevel because isHiding is true");
 #endif
             yield break;
         }
@@ -210,14 +236,14 @@ namespace BailOutMode
                 if (multiplayerSessionManager.connectedPlayerCount == 0)
                 {
 #if DEBUG
-                    Logger.log?.Debug($"connectedPlayerCount is {multiplayerSessionManager.connectedPlayerCount}, skipping last standing check.");
+                    Plugin.Log?.Debug($"connectedPlayerCount is {multiplayerSessionManager.connectedPlayerCount}, skipping last standing check.");
 #endif
                     yield return _lastStandingWait;
                 }
                 else
                 {
 #if DEBUG
-                    Logger.log?.Debug($"connectedPlayerCount is {multiplayerSessionManager.connectedPlayerCount}. Checking if they failed.");
+                    Plugin.Log?.Debug($"connectedPlayerCount is {multiplayerSessionManager.connectedPlayerCount}. Checking if they failed.");
 #endif
                     IConnectedPlayer[] players = multiplayerSessionManager.connectedPlayers.ToArray();
                     bool hasActivePlayer = false;
@@ -229,23 +255,25 @@ namespace BailOutMode
                         }
 #if DEBUG
                         if (players[i].isMe)
-                            Logger.log?.Debug($"Local player flagged as failed: {players[i].IsFailed()}");
+                            Plugin.Log?.Debug($"Local player flagged as failed: {players[i].IsFailed()}");
 #endif
                     }
                     if (!hasActivePlayer)
                     {
-                        Logger.log?.Debug($"All other players failed, triggering level failed.");
+                        Plugin.Log?.Debug($"All other players failed, triggering level failed.");
                         if (MultiGameplayManager != null)
                         {
                             MultiGameplayManager.HandleGameEnergyDidReach0();
                         }
                         else
-                            Logger.log?.Warn($"Tried to fail level, but ILevelEndActions isn't a StandardLevelGameplayManager.");
+                            Plugin.Log?.Warn($"Tried to fail level, but ILevelEndActions isn't a StandardLevelGameplayManager.");
                     }
                     yield return _lastStandingWait;
                 }
             }
+#pragma warning disable CS0162 // Unreachable code detected
             _lastStandingCheckActive = false;
+#pragma warning restore CS0162 // Unreachable code detected
         }
 
         public static void FacePosition(Transform obj, Vector3 targetPos)
@@ -254,27 +282,31 @@ namespace BailOutMode
             obj.rotation = rotAngle;
         }
 
-        public TextMeshProUGUI CreateText(string text)
+        public TextMeshProUGUI? CreateText(string text)
         {
             Canvas _canvas = new GameObject("BailOutFailText").AddComponent<Canvas>();
             _canvas.gameObject.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
             _canvas.renderMode = RenderMode.WorldSpace;
-            (_canvas.transform as RectTransform).sizeDelta = new Vector2(0f, 0f);
-            return CreateText(_canvas, text, new Vector2(0f, 0f), (_canvas.transform as RectTransform).sizeDelta);
+            ((RectTransform)_canvas.transform).sizeDelta = new Vector2(0f, 0f);
+            TextMeshProUGUI? createdText = CreateText(_canvas, text, new Vector2(0f, 0f),
+                                                      ((RectTransform)_canvas.transform).sizeDelta);
+            if (createdText == null)
+                GameObject.Destroy(_canvas);
+            return createdText;
         }
 
-        public TextMeshProUGUI CreateText(Canvas parent, string text, Vector2 anchoredPosition, Vector2 sizeDelta)
+        public TextMeshProUGUI? CreateText(Canvas parent, string text, Vector2 anchoredPosition, Vector2 sizeDelta)
         {
             GameObject gameObj = parent.gameObject;
             gameObj.SetActive(false);
             TextMeshProUGUI textMesh = gameObj.AddComponent<TextMeshProUGUI>();
             TMP_FontAsset[] allFonts = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
-            Logger.log?.Debug("Found fonts:");
-            Logger.log?.Debug(string.Join<TMP_FontAsset>("\n'", allFonts));
+            Plugin.Log?.Debug("Found fonts:");
+            Plugin.Log?.Debug(string.Join<TMP_FontAsset>("\n'", allFonts));
             TMP_FontAsset font = allFonts.FirstOrDefault(t => t.name == "Teko-Medium SDF");
             if (font == null)
             {
-                Logger.log.Error("Could not locate font asset, unable to display text");
+                Plugin.Log?.Error("Could not locate font asset, unable to display text");
                 return null;
             }
             textMesh.font = font;
@@ -326,8 +358,8 @@ namespace BailOutMode
             }
             catch (Exception ex)
             {
-                Logger.log.Error($"Cannot convert value of {vStr} to a Vector. Needs to be in the format #,#,#: {ex.Message}");
-                Logger.log.Debug(ex);
+                Plugin.Log?.Error($"Cannot convert value of {vStr} to a Vector. Needs to be in the format #,#,#: {ex.Message}");
+                Plugin.Log?.Debug(ex);
                 return new Vector3(DefaultSettings.CounterTextPosition.x, DefaultSettings.CounterTextPosition.y, DefaultSettings.CounterTextPosition.z);
             }
         }

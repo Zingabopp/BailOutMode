@@ -23,15 +23,15 @@ namespace BailOutMode.Harmony_Patches
                     return true;
                 if (BailOutController.instance.numFails > 0)
                 {
-                    Logger.log.Debug("Fail detected in BailOutController, forcing level failed");
+                    Plugin.Log?.Debug("Fail detected in BailOutController, forcing level failed");
                     __instance.HandleGameEnergyDidReach0();
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Logger.log.Error($"Error in MultiplayerLocalActivePlayerGameplayManagerHandleSongDidFinish: {ex.Message}");
-                Logger.log.Debug(ex);
+                Plugin.Log?.Error($"Error in MultiplayerLocalActivePlayerGameplayManagerHandleSongDidFinish: {ex.Message}");
+                Plugin.Log?.Debug(ex);
             }
 
             return false;

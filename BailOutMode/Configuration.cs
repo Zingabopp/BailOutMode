@@ -31,7 +31,7 @@ namespace BailOutMode
     }
     internal class Configuration
     {
-        internal static Configuration instance;
+        internal static Configuration instance = null!;
         private float _counterTextSize = DefaultSettings.CounterTextSize;
         private int _energyReset = DefaultSettings.EnergyResetAmount;
         private bool _enableGameplayTab = DefaultSettings.EnableGameplayTab;
@@ -102,7 +102,7 @@ namespace BailOutMode
                     _counterTextSize = value;
                 else
                 {
-                    Logger.log.Error($"Invalid CounterTextSize value: {value}, must be > 0.");
+                    Plugin.Log?.Error($"Invalid CounterTextSize value: {value}, must be > 0.");
                     _counterTextSize = DefaultSettings.CounterTextSize;
                 }
                 if (_counterTextSize == oldValue)

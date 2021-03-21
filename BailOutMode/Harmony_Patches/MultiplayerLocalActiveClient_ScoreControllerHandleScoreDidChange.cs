@@ -39,7 +39,7 @@ namespace BailOutMode.Harmony_Patches
 
         static bool Prefix(ref int rawScore, ref int modifiedScore)
         {
-            if (BailOutController.instance.numFails > 0)
+            if ((BailOutController.instance?.numFails ?? 0) > 0)
                 return false;
             lastRawScore = rawScore;
             lastModifiedScore = modifiedScore;

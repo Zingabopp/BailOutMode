@@ -13,7 +13,7 @@ namespace BailOutMode
     {
         public override void InstallBindings()
         {
-            Logger.log?.Info("Injecting Dependencies");
+            Plugin.Log?.Info("Injecting Dependencies");
             Container.Bind<BailOutController>().FromNewComponentOnNewGameObject("BailOutController").AsSingle().NonLazy();
         }
     }

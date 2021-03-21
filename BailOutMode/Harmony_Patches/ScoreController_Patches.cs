@@ -15,10 +15,10 @@ namespace BailOutMode.Harmony_Patches
         static bool Prefix(ref int ____prevFrameRawScore, ref int __result)
         {
             int lastRawScore = MultiplayerLocalActiveClient_ScoreControllerHandleScoreDidChange.lastRawScore;
-            if (BailOutController.instance.numFails > 0 && lastRawScore >= 0)
+            if ((BailOutController.instance?.numFails ?? 0) > 0 && lastRawScore >= 0)
             {
 #if DEBUG
-                Logger.log?.Debug($"Multiplayer Bailout detected. Overriding raw score '{____prevFrameRawScore}' with '{lastRawScore}'");
+                Plugin.Log?.Debug($"Multiplayer Bailout detected. Overriding raw score '{____prevFrameRawScore}' with '{lastRawScore}'");
 #endif
                 __result = lastRawScore;
                 return false;
@@ -33,11 +33,11 @@ namespace BailOutMode.Harmony_Patches
         static bool Prefix(ref int ____prevFrameRawScore, ref float ____gameplayModifiersScoreMultiplier, ref int __result)
         {
             int lastModifiedScore = MultiplayerLocalActiveClient_ScoreControllerHandleScoreDidChange.lastModifiedScore;
-            if (BailOutController.instance.numFails > 0 && lastModifiedScore >= 0)
+            if ((BailOutController.instance?.numFails ?? 0) > 0 && lastModifiedScore >= 0)
             {
                 int modifiedScore = ScoreModel.GetModifiedScoreForGameplayModifiersScoreMultiplier(____prevFrameRawScore, ____gameplayModifiersScoreMultiplier);
 #if DEBUG
-                Logger.log?.Debug($"Multiplayer Bailout detected. Overriding modified score '{modifiedScore}' with '{lastModifiedScore}'");
+                Plugin.Log?.Debug($"Multiplayer Bailout detected. Overriding modified score '{modifiedScore}' with '{lastModifiedScore}'");
 #endif
                 __result = lastModifiedScore;
                 return false;
