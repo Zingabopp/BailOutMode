@@ -19,28 +19,22 @@
   </Target>
   <!--Runs a build task to get info about the project used by later targets.-->
   <Target Name="GetProjectInfo" AfterTargets="CheckBSMTInstalled" DependsOnTargets="CheckBSMTInstalled" Condition="'$(BSMTTaskAssembly)' != ''">
-    <GetManifestInfo FailOnError="$(ErrorOnMismatchedVersions)">
-      <Output TaskParameter="PluginVersion" PropertyName="PluginVersion" />
-      <Output TaskParameter="GameVersion" PropertyName="GameVersion" />
-    </GetManifestInfo>
-    <PropertyGroup>
-      <AssemblyVersion>$(PluginVersion)</AssemblyVersion>
-    </PropertyGroup>
-    <!--<GetAssemblyInfo FailOnError="$(ErrorOnMismatchedVersions)" Condition="'$(AssemblyVersion)' == ''">
-      <Output TaskParameter="AssemblyVersion" PropertyName="AssemblyVersion" />
-    </GetAssemblyInfo>-->
-    <CompareVersions PluginVersion="$(PluginVersion)" AssemblyVersion="$(AssemblyVersion)" ErrorOnMismatch="$(ErrorOnMismatchedVersions)" />
+    <GenerateManifest ID="$(AssemblyName)" Name="$(AssemblyName)" Author="$(Authors)" Description="$(Description)"
+                      Version="$(Version)" GameVersion="$(GameVersion)" DependsOn="@(Dependency)"
+                      ProjectHome="$(ProjectHome)" ProjectSource="$(ProjectSource)" Donate="$(Donate)"
+                      TargetPath="$(IntermediateOutputPath)manifest.json"/>
+    <ItemGroup>
+      <EmbeddedResource Include="$(IntermediateOutputPath)manifest.json" LogicalName="$(AssemblyName).manifest.json" />
+    </ItemGroup>
     <GetCommitInfo ProjectDir="$(ProjectDir)">
       <Output TaskParameter="CommitHash" PropertyName="CommitHash" />
       <Output TaskParameter="Branch" PropertyName="Branch" />
       <Output TaskParameter="Modified" PropertyName="GitModified" />
     </GetCommitInfo>
     <PropertyGroup>
-      <AssemblyVersion>$(PluginVersion)</AssemblyVersion>
-      <Version>$(PluginVersion)</Version>
       <!--Build name for artifact/zip file-->
       <ArtifactName>$(AssemblyName)</ArtifactName>
-      <ArtifactName Condition="'$(PluginVersion)' != ''">$(ArtifactName)-$(PluginVersion)</ArtifactName>
+      <ArtifactName Condition="'$(Version)' != ''">$(ArtifactName)-$(Version)</ArtifactName>
       <ArtifactName Condition="'$(GameVersion)' != ''">$(ArtifactName)-bs$(GameVersion)</ArtifactName>
       <ArtifactName Condition="'$(CommitHash)' != '' AND '$(CommitHash)' != 'local'">$(ArtifactName)-$(CommitHash)</ArtifactName>
     </PropertyGroup>
@@ -52,7 +46,7 @@
       <ArtifactName Condition="'$(ArtifactName)' == ''">$(AssemblyName)</ArtifactName>
     </PropertyGroup>
     <Message Text="Building for CI" Importance="high" />
-    <Message Text="PluginVersion: $(PluginVersion), AssemblyVersion: $(AssemblyVersion), GameVersion: $(GameVersion)" Importance="high" />
+    <Message Text="Version: $(Version), GameVersion: $(GameVersion)" Importance="high" />
     <Message Text="::set-output name=filename::$(ArtifactName)" Importance="high" />
     <Message Text="::set-output name=assemblyname::$(AssemblyName)" Importance="high" />
     <Message Text="::set-output name=artifactpath::$(ProjectDir)$(ArtifactDestination)" Importance="high" />
@@ -71,7 +65,7 @@
       <OldZips Include="$(DestinationDirectory)$(AssemblyName)*.zip"/>
     </ItemGroup>
     <Copy SourceFiles="$(OutputAssemblyName).dll" DestinationFiles="$(ArtifactDestination)\Plugins\$(AssemblyName).dll" />
-    <Message Text="PluginVersion: $(PluginVersion), AssemblyVersion: $(AssemblyVersion), GameVersion: $(GameVersion)" Importance="high" />
+    <Message Text="Version: $(Version), GameVersion: $(GameVersion)" Importance="high" />
     <Delete Files="@(OldZips)" TreatErrorsAsWarnings="true" ContinueOnError="true" />
     <ZipDir SourceDirectory="$(ArtifactDestination)" DestinationFile="$(DestinationDirectory)$(ArtifactName).zip" />
   </Target>
