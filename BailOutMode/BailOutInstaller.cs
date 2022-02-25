@@ -14,7 +14,7 @@ namespace BailOutMode
         public override void InstallBindings()
         {
             Logger.log?.Info("Injecting Dependencies");
-            Container.Bind<BailOutController>().FromNewComponentOnNewGameObject("BailOutController").AsSingle().NonLazy();
+            Container.Bind<BailOutController>().FromNewComponentOnNewGameObject().AsSingle().NonLazy();
         }
     }
 }
