@@ -35,7 +35,7 @@ namespace BailOutMode
             harmony = new Harmony("com.github.zingabopp.bailoutmode");
             PluginMetadata = pluginMetadata;
             Zenjector = zenjector;
-            zenjector.OnGame<BailOutInstaller>(false);
+            zenjector.Install<BailOutInstaller>(Location.GameCore);
             //BS_Utils.Utilities.BSEvents.lateMenuSceneLoadedFresh += MenuLoadedFresh;
         }
 
@@ -76,7 +76,7 @@ namespace BailOutMode
             }
             try
             {
-                harmony.UnpatchAll(harmony.Id);
+                harmony.UnpatchSelf();
             }
             catch (Exception ex)
             {
